@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Preços Shopee - Versão Especialista</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    /* Regras especiais para impressão limpa de relatórios comerciais */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-modal, #print-modal * {
+        visibility: visible;
+      }
+      #print-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        background: white !important;
+        box-shadow: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* Animações e scrollbars sutis */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#EE4D2D] to-[#ff7354] flex items-center justify-center text-white font-bold shadow-md shadow-orange-500/20">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"/>
+            </svg>
+          </div>
+          <div>
+          <h1 class="font-bold text-lg text-slate-900 tracking-tight flex items-center gap-2">
+            Precificador Shopee Pro
+            <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">2026 Ready</span>
+          </h1>
+          <p class="text-xs font-semibold text-orange-600">Agência WB Digital</p>
+        </div>
+      </div>
+
+        <!-- Abas de Navegação -->
+        <nav class="flex flex-wrap gap-1 bg-slate-100 p-1 rounded-xl">
+          <button id="tab-single-btn" onclick="switchTab('single')" class="px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-xs">
+            Simulador Individual
+          </button>
+          <button id="tab-combo-btn" onclick="switchTab('combo')" class="px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+            <span>Combos & Kits</span>
+            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-bold">Anti-Taxas</span>
+          </button>
+          <button id="tab-promo-btn" onclick="switchTab('promo')" class="px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+            <span>Cupons & Promoções</span>
+            <span class="text-[10px] bg-orange-100 text-orange-800 px-1.5 py-0.2 rounded font-bold">Elasticidade</span>
+          </button>
+          <button id="tab-batch-btn" onclick="switchTab('batch')" class="px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900">
+            Lote & Planilhas
+          </button>
+          <button id="tab-rules-btn" onclick="switchTab('rules')" class="px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900">
+            Regras Shopee
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- TAB 1: SIMULADOR INDIVIDUAL -->
+    <div id="tab-single" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Formulário de Parâmetros -->
+        <div class="lg:col-span-6 bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-5">
+          <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+              Parâmetros do Produto
+            </h2>
+            <button onclick="resetSingleForm()" class="text-xs text-slate-400 hover:text-slate-600 transition-colors">Limpar Valores</button>
+          </div>
+
+          <!-- Identificação -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Produto</label>
+              <input type="text" id="p-title" value="Ex: Fone Bluetooth TWS Pro" placeholder="Identificação do item" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">SKU / Código</label>
+              <input type="text" id="p-sku" value="FON-TWS-01" placeholder="Código interno" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition">
+            </div>
+          </div>
+
+          <!-- Modo de Cálculo -->
+          <div class="bg-orange-50/70 border border-orange-100 p-3.5 rounded-xl">
+            <label class="block text-xs font-bold text-orange-950 mb-2">Modo de Operação</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" id="btn-mode-target" onclick="setCalcMode('target')" class="py-2 px-3 text-xs font-semibold rounded-lg bg-orange-600 text-white shadow-xs transition">
+                Calcular Preço por Margem Alvo
+              </button>
+              <button type="button" id="btn-mode-fixed" onclick="setCalcMode('fixed')" class="py-2 px-3 text-xs font-semibold rounded-lg bg-white text-slate-700 hover:bg-orange-100/50 transition">
+                Simular Margem de Preço Fixo
+              </button>
+            </div>
+          </div>
+
+          <!-- Custos Diretos de Fabricação / Aquisição -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                <span>Custo do Produto (CMV)</span>
+                <span class="text-[11px] text-slate-400">R$</span>
+              </label>
+              <input type="number" step="0.01" min="0" id="p-cost" value="28.50" oninput="calculateSingle()" class="w-full text-sm font-medium px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                <span>Embalagem & Insumos</span>
+                <span class="text-[11px] text-slate-400">R$</span>
+              </label>
+              <input type="number" step="0.01" min="0" id="p-packaging" value="2.00" oninput="calculateSingle()" class="w-full text-sm font-medium px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500">
+            </div>
+          </div>
+
+          <!-- Campo Dinâmico: Margem Alvo vs Preço Fixo -->
+          <div id="dynamic-target-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div id="target-margin-box">
+              <label class="block text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                <span>Margem Líquida Alvo</span>
+                <span class="text-[11px] text-orange-600 font-bold">% sobre a venda</span>
+              </label>
+              <input type="number" step="0.5" min="0" max="95" id="p-target-margin" value="18.0" oninput="calculateSingle()" class="w-full text-sm font-bold text-slate-900 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500">
+            </div>
+            <div id="fixed-price-box" class="hidden">
+              <label class="block text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                <span>Preço de Venda Praticado</span>
+                <span class="text-[11px] text-orange-600 font-bold">R$ no Anúncio</span>
+              </label>
+              <input type="number" step="0.10" min="1" id="p-fixed-price" value="79.90" oninput="calculateSingle()" class="w-full text-sm font-bold text-slate-900 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Perfil da Conta Shopee</label>
+              <select id="p-account-type" onchange="calculateSingle()" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white">
+                <option value="CNPJ_NORMAL">CNPJ / MEI / EPP (Padrão)</option>
+                <option value="CPF_NORMAL">CPF Normal (≤ 450 ped/90d)</option>
+                <option value="CPF_PENALIZADO">CPF Alavancado (> 450 ped/90d)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Deduções Percentuais Variáveis -->
+          <div class="border-t border-slate-100 pt-3">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Deduções Fiscais e de Tráfego</span>
+            <div class="grid grid-cols-3 gap-2.5">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Impostos / DAS (%)</label>
+                <input type="number" step="0.1" min="0" id="p-tax" value="6.0" oninput="calculateSingle()" class="w-full text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 focus:ring-1 focus:ring-orange-500">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Shopee Ads / Mkt (%)</label>
+                <input type="number" step="0.5" min="0" id="p-ads" value="4.0" oninput="calculateSingle()" class="w-full text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 focus:ring-1 focus:ring-orange-500">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Provisão Avarias (%)</label>
+                <input type="number" step="0.1" min="0" id="p-loss" value="1.5" oninput="calculateSingle()" class="w-full text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 focus:ring-1 focus:ring-orange-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Programa Devolução Fácil -->
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <input type="checkbox" id="p-dev-facil" checked onchange="calculateSingle()" class="w-4 h-4 rounded text-orange-600 focus:ring-orange-500 border-slate-300">
+              <div>
+                <div class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  Programa Devolução Fácil Shopee
+                  <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-medium">+R$ 0,49/pedido</span>
+                </div>
+                <p class="text-[11px] text-slate-500">Cobrança obrigatória para contas participantes aprovadas</p>
+              </div>
+            </div>
+            <div class="w-24">
+              <label class="block text-[10px] text-slate-500 mb-0.5 font-medium">Itens/Pedido</label>
+              <input type="number" min="1" step="1" id="p-items-per-order" value="1" oninput="calculateSingle()" class="w-full text-xs px-2 py-1 rounded border border-slate-200 text-center font-semibold">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Resultados Financeiros e Análise Estratégica -->
+        <div class="lg:col-span-6 space-y-5">
+          
+          <!-- Card de Preço Recomendado e Repasse -->
+          <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+            <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-orange-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-xs uppercase tracking-wider text-orange-400 font-bold block mb-1">Preço Recomendado no Anúncio</span>
+                <div class="text-3xl sm:text-4xl font-extrabold tracking-tight" id="res-price">R$ 0,00</div>
+              </div>
+              <div class="text-right">
+                <span class="text-[11px] text-slate-400 block mb-0.5">Preço Estimado com PIX Shopee</span>
+                <span class="text-sm font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-lg inline-block" id="res-pix-price">
+                  R$ 0,00 (-5%)
+                </span>
+              </div>
+            </div>
+
+            <!-- Grid de Indicadores Centrais -->
+            <div class="grid grid-cols-3 gap-3 pt-4 border-t border-slate-700/60 text-center">
+              <div class="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700">
+                <span class="text-[10px] text-slate-400 block font-medium">Repasse Líquido Shopee</span>
+                <span class="text-sm sm:text-base font-bold text-white block mt-0.5" id="res-repasse">R$ 0,00</span>
+                <span class="text-[10px] text-slate-400" id="res-repasse-pct">0%</span>
+              </div>
+              <div class="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700">
+                <span class="text-[10px] text-slate-400 block font-medium">Lucro Líquido Real</span>
+                <span class="text-sm sm:text-base font-bold text-emerald-400 block mt-0.5" id="res-profit">R$ 0,00</span>
+                <span class="text-[10px] text-emerald-300 font-semibold" id="res-margin">0,0% margem</span>
+              </div>
+              <div class="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700">
+                <span class="text-[10px] text-slate-400 block font-medium">Ponto de Equilíbrio</span>
+                <span class="text-sm sm:text-base font-bold text-amber-300 block mt-0.5" id="res-breakeven">R$ 0,00</span>
+                <span class="text-[10px] text-slate-400">Margem Zero</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- OTIMIZADOR DE GARGALOS INVISÍVEIS (ANTI-PREJUÍZO) -->
+          <div id="alert-zone-80" class="hidden bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 p-4 sm:p-5 rounded-2xl shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-lg">
+                  ⚠️
+                </div>
+                <div>
+                  <h4 class="text-xs sm:text-sm font-extrabold text-amber-950 uppercase tracking-wide flex items-center gap-2">
+                    Gargalo Invisível Detectado (Salto R$ 4 ➔ R$ 16)
+                    <span class="text-[10px] bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full font-bold">Risco de Perda</span>
+                  </h4>
+                  <p class="text-xs text-amber-900 mt-1 leading-relaxed" id="alert-zone-80-text">
+                    Carregando análise...
+                  </p>
+                </div>
+              </div>
+
+              <div class="shrink-0 flex sm:flex-col items-end justify-between sm:justify-center gap-2">
+                <button type="button" onclick="applyGargaloAdjustment()" class="w-full sm:w-auto py-2 px-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                  Reajustar para R$ 79,90
+                </button>
+              </div>
+            </div>
+
+            <!-- Curva de Ganho Real entre R$ 75 e R$ 95 -->
+            <div class="bg-white/90 rounded-xl p-3.5 border border-amber-200/80 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                  Curva de Lucro no Bolso (Faixa R$ 75,00 a R$ 95,00)
+                </span>
+                <span class="text-[11px] text-slate-500">Base: Mesmo custo unitário</span>
+              </div>
+
+              <!-- Grid Horizontal de Preços Simulados -->
+              <div class="overflow-x-auto pb-1">
+                <div class="grid grid-flow-col auto-cols-[105px] gap-2 text-center" id="gargalo-curve-grid">
+                  <!-- Gerado via JavaScript dinamicamente -->
+                </div>
+              </div>
+              <p class="text-[11px] text-slate-500 italic text-center pt-1 border-t border-slate-100">
+                💡 <strong>Preço de Indiferença:</strong> Você precisa subir o anúncio para mais de <span class="font-bold text-slate-800" id="gargalo-indifference-price">R$ 90,00</span> para conseguir o mesmo lucro nominal que teria a R$ 79,90.
+              </p>
+            </div>
+          </div>
+
+          <!-- DRE Unitária Detalhada -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center justify-between">
+              <span>DRE da Unidade (Decomposição de Cada Venda)</span>
+              <span class="text-slate-400 font-normal">Base 100%</span>
+            </h3>
+
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between py-1 border-b border-slate-100 font-bold text-slate-800">
+                <span>(+) Faturamento Bruto (Preço de Venda)</span>
+                <span id="dre-faturamento">R$ 0,00 (100%)</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100 text-red-600">
+                <span>(-) Comissão Shopee (<span id="dre-taxa-pct">0%</span>)</span>
+                <span id="dre-taxa-comissao">- R$ 0,00</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100 text-red-600">
+                <span>(-) Taxa Fixa por Item da Shopee</span>
+                <span id="dre-taxa-fixa">- R$ 0,00</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100 text-red-600" id="dre-row-dev-facil">
+                <span>(-) Devolução Fácil Shopee (Diluída)</span>
+                <span id="dre-taxa-dev">- R$ 0,00</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100 font-semibold text-slate-900 bg-slate-50/80 px-2 rounded">
+                <span>(=) Repasse Estimado da Shopee</span>
+                <span id="dre-repasse">R$ 0,00</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100 text-slate-600">
+                <span>(-) Custo da Mercadoria (CMV)</span>
+                <span id="dre-cmv">- R$ 0,00</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100 text-slate-600">
+                <span>(-) Embalagens & Insumos</span>
+                <span id="dre-embalagem">- R$ 0,00</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100 text-slate-600">
+                <span>(-) Impostos & Tributos (<span id="dre-imposto-pct">0%</span>)</span>
+                <span id="dre-imposto">- R$ 0,00</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100 text-slate-600">
+                <span>(-) Shopee Ads & Tráfego (<span id="dre-ads-pct">0%</span>)</span>
+                <span id="dre-ads">- R$ 0,00</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100 text-slate-600">
+                <span>(-) Provisão de Avarias / Riscos (<span id="dre-avaria-pct">0%</span>)</span>
+                <span id="dre-avaria">- R$ 0,00</span>
+              </div>
+              <div class="flex justify-between pt-2 text-sm font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200">
+                <span>(=) LUCRO LÍQUIDO NO BOLSO</span>
+                <span id="dre-lucro">R$ 0,00 (0,0%)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Box de Observações e Ações -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+            <span class="text-xs font-bold text-slate-600 uppercase tracking-wide block">Observações de Taxas e Faixa:</span>
+            <p class="text-xs text-slate-600 font-mono leading-relaxed" id="res-obs-box">--</p>
+          </div>
+
+          <!-- Ações do Simulador Individual -->
+          <div class="flex flex-wrap gap-2 pt-1">
+            <button onclick="openPrintModal()" class="flex-1 py-2.5 px-4 text-xs font-bold rounded-xl bg-slate-900 hover:bg-slate-800 text-white shadow-xs transition flex items-center justify-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+              </svg>
+              Imprimir Composição (PDF)
+            </button>
+            <button onclick="copySingleSummary()" class="py-2.5 px-4 text-xs font-bold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition flex items-center justify-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+              </svg>
+              Copiar WhatsApp
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SIMULADOR DE COMBOS, KITS E ESCALA DE CARRINHO -->
+    <div id="tab-combo" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-6">
+        <div class="border-b border-slate-100 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              Simulador de Kits, Combos e Escala de Carrinho
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Descubra quanto você economiza em taxas fixas da Shopee e embalagens ao vender conjuntos, e encontre o desconto máximo competitivo.
+            </p>
+          </div>
+          <button onclick="syncComboFromSingle()" class="py-2 px-3 text-xs font-semibold rounded-lg bg-orange-50 text-orange-700 hover:bg-orange-100 transition border border-orange-200 flex items-center gap-1.5 self-start">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Puxar Dados do Simulador Individual
+          </button>
+        </div>
+
+        <!-- Parâmetros do Produto Base e Insumos Unificados -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Custo Unitário (CMV)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2 text-xs text-slate-400">R$</span>
+              <input type="number" step="0.01" id="combo-cost" value="28.50" oninput="calculateCombos()" class="w-full text-xs font-semibold pl-8 pr-3 py-2 rounded-lg border border-slate-200 bg-white">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Preço Venda Unitário Base</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2 text-xs text-slate-400">R$</span>
+              <input type="number" step="0.10" id="combo-base-price" value="69.90" oninput="calculateCombos()" class="w-full text-xs font-bold pl-8 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Embalagem Unitária Avulsa</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2 text-xs text-slate-400">R$</span>
+              <input type="number" step="0.10" id="combo-pkg-1" value="2.00" oninput="calculateCombos()" class="w-full text-xs font-medium pl-8 pr-3 py-2 rounded-lg border border-slate-200 bg-white">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Perfil da Conta</label>
+            <select id="combo-account-type" onchange="calculateCombos()" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-200 bg-white">
+              <option value="CNPJ_NORMAL">CNPJ / MEI (Padrão)</option>
+              <option value="CPF_NORMAL">CPF Normal</option>
+              <option value="CPF_PENALIZADO">CPF Alavancado (>450 ped)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Configuração de Embalagens Unificadas e Descontos Ofertados -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl border border-slate-200 bg-white space-y-3">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              Configurações do Kit com 2 Unidades
+            </h3>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Embalagem Unificada Kit 2 (R$)</label>
+                <input type="number" step="0.10" id="combo-pkg-2" value="2.60" oninput="calculateCombos()" class="w-full text-xs p-2 rounded-lg border border-slate-200">
+                <span class="text-[10px] text-emerald-600 font-medium">Economia vs. 2 embalagens</span>
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Desconto Ofertado no Kit (%)</label>
+                <input type="number" step="0.5" id="combo-disc-2" value="8.0" oninput="calculateCombos()" class="w-full text-xs p-2 rounded-lg border border-slate-200 font-bold text-orange-600">
+                <span class="text-[10px] text-slate-400">Sobre o preço total dobrado</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl border border-slate-200 bg-white space-y-3">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+              Configurações do Kit com 3 Unidades
+            </h3>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Embalagem Unificada Kit 3 (R$)</label>
+                <input type="number" step="0.10" id="combo-pkg-3" value="3.20" oninput="calculateCombos()" class="w-full text-xs p-2 rounded-lg border border-slate-200">
+                <span class="text-[10px] text-emerald-600 font-medium">Economia vs. 3 embalagens</span>
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Desconto Ofertado no Kit (%)</label>
+                <input type="number" step="0.5" id="combo-disc-3" value="12.0" oninput="calculateCombos()" class="w-full text-xs p-2 rounded-lg border border-slate-200 font-bold text-orange-600">
+                <span class="text-[10px] text-slate-400">Sobre o preço total triplicado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid Comparativo Lado a Lado: 1 un vs Kit 2 vs Kit 3 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="combo-cards-grid">
+          <!-- Gerado via JavaScript -->
+        </div>
+
+        <!-- Dica Estratégica de Alavancagem de Anúncios -->
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-xl text-xs text-blue-900 leading-relaxed">
+          <strong>Por que criar anúncios específicos de Kits na Shopee?</strong> Ao vender um anúncio com 2 ou 3 peças juntas, a Shopee cobra a taxa fixa como um <em>único item</em> referente ao valor total do combo, e você gasta apenas uma etiqueta e uma embalagem. Isso gera folga de margem para aplicar descontos agressivos de 5% a 15% e ganhar a Buybox e o clique do cliente.
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: CALCULADORA DE CUPONS, OFERTAS RELÂMPAGO & ELASTICIDADE -->
+    <div id="tab-promo" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-6">
+        <div class="border-b border-slate-100 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+              Calculadora de Cupons, Ofertas Relâmpago & Elasticidade de Vendas
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Simule o impacto de promoções oficiais e cupons de loja. Descubra exatamente quanto seu volume de vendas precisa subir para pagar o desconto e não reduzir seu lucro total.
+            </p>
+          </div>
+          <button onclick="syncPromoFromSingle()" class="py-2 px-3 text-xs font-semibold rounded-lg bg-orange-50 text-orange-700 hover:bg-orange-100 transition border border-orange-200 flex items-center gap-1.5 self-start">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Importar Preço e Custos do Simulador
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Entradas da Campanha -->
+          <div class="lg:col-span-5 space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
+            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wide">Parâmetros da Promoção</h3>
+            
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-700 mb-1">Preço Normal (R$)</label>
+                <input type="number" step="0.10" id="promo-price" value="69.90" oninput="calculatePromotions()" class="w-full text-xs font-bold p-2 rounded-lg border border-slate-200 bg-white">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-700 mb-1">Custo CMV + Emb. (R$)</label>
+                <input type="number" step="0.10" id="promo-direct-cost" value="30.50" oninput="calculatePromotions()" class="w-full text-xs font-semibold p-2 rounded-lg border border-slate-200 bg-white">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-1">Vendas Mensais Habituais (Unidades/mês)</label>
+              <input type="number" step="1" min="1" id="promo-base-volume" value="100" oninput="calculatePromotions()" class="w-full text-xs font-bold p-2 rounded-lg border border-slate-200 bg-white">
+              <span class="text-[10px] text-slate-400">Volume atual sem desconto</span>
+            </div>
+
+            <!-- Descontos e Tráfego -->
+            <div class="border-t border-slate-200 pt-3 space-y-3">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-700 mb-1 flex justify-between">
+                  <span>Desconto de Cupom / Oferta Relâmpago (%)</span>
+                  <span class="font-bold text-orange-600" id="promo-disc-label">8.0%</span>
+                </label>
+                <input type="range" min="1" max="40" step="0.5" id="promo-disc-pct" value="8.0" oninput="updatePromoSlider(this.value, 'promo-disc-label'); calculatePromotions();" class="w-full accent-orange-600">
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-700 mb-1 flex justify-between">
+                  <span>Investimento Extra em Shopee Ads (%)</span>
+                  <span class="font-bold text-orange-600" id="promo-ads-label">+4.0%</span>
+                </label>
+                <input type="range" min="0" max="25" step="0.5" id="promo-extra-ads" value="4.0" oninput="updatePromoSlider(this.value, 'promo-ads-label', '+'); calculatePromotions();" class="w-full accent-orange-600">
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-700 mb-1 flex justify-between">
+                  <span>Comissão Extra de Afiliados Shopee (%)</span>
+                  <span class="font-bold text-orange-600" id="promo-affiliate-label">+3.0%</span>
+                </label>
+                <input type="range" min="0" max="25" step="0.5" id="promo-extra-affiliate" value="3.0" oninput="updatePromoSlider(this.value, 'promo-affiliate-label', '+'); calculatePromotions();" class="w-full accent-orange-600">
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">Impostos DAS (%)</label>
+                  <input type="number" step="0.1" id="promo-tax" value="6.0" oninput="calculatePromotions()" class="w-full text-xs p-1.5 rounded-lg border border-slate-200 bg-white">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">Ads Base + Avarias (%)</label>
+                  <input type="number" step="0.1" id="promo-base-deduct" value="5.5" oninput="calculatePromotions()" class="w-full text-xs p-1.5 rounded-lg border border-slate-200 bg-white">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Diagnóstico de Elasticidade e Termômetro -->
+          <div class="lg:col-span-7 space-y-4">
+            
+            <!-- Card Principal de Elasticidade -->
+            <div id="promo-elasticity-card" class="rounded-2xl p-5 border shadow-sm space-y-4 bg-slate-900 text-white">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <span class="text-xs uppercase font-bold tracking-wider text-orange-400">Veredito da Campanha</span>
+                <span id="promo-badge-status" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/30">
+                  Viável
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <span class="text-[11px] text-slate-400 block font-medium">Aumento de Vendas Necessário</span>
+                  <div class="text-2xl sm:text-3xl font-extrabold text-white mt-0.5" id="promo-required-growth">+0%</div>
+                  <span class="text-[11px] text-slate-300" id="promo-required-units">Você precisa vender 0 un/mês</span>
+                </div>
+                <div>
+                  <span class="text-[11px] text-slate-400 block font-medium">Novo Lucro Líquido por Venda</span>
+                  <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-0.5" id="promo-new-profit">R$ 0,00</div>
+                  <span class="text-[11px] text-slate-300" id="promo-new-margin">Margem Real: 0%</span>
+                </div>
+              </div>
+
+              <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 text-xs text-slate-300 leading-relaxed" id="promo-analysis-text">
+                Calculando impacto...
+              </div>
+            </div>
+
+            <!-- Tabela de Simulação de Cenários de Crescimento -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                Projeção do Lucro Mensal Líquido em Diferentes Cenários
+              </h4>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left border-collapse">
+                  <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                    <tr>
+                      <th class="p-2.5">Cenário de Vendas</th>
+                      <th class="p-2.5">Volume (un)</th>
+                      <th class="p-2.5">Faturamento Bruto</th>
+                      <th class="p-2.5 text-right">Lucro Total no Mês</th>
+                      <th class="p-2.5 text-right">Diferença vs. Atual</th>
+                    </tr>
+                  </thead>
+                  <tbody id="promo-scenarios-tbody" class="divide-y divide-slate-100 text-slate-700">
+                    <!-- Gerado dinamicamente -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PRECIFICAÇÃO EM LOTE & PLANILHA -->
+    <div id="tab-batch" class="hidden space-y-6">
+      
+      <!-- Barra Superior de Controle de Lote -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              Precificação em Lote & Importação de Planilhas
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Cadastre múltiplos produtos manualmente ou envie sua planilha em CSV.</p>
+          </div>
+          
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="downloadCsvTemplate()" class="py-2 px-3 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              Baixar Modelo CSV
+            </button>
+            <label class="py-2 px-3 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1.5 shadow-xs">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              Importar Planilha (CSV)
+              <input type="file" id="batch-file-input" accept=".csv,text/csv" onchange="handleCsvImport(event)" class="hidden">
+            </label>
+            <button onclick="exportBatchCsv()" class="py-2 px-3 text-xs font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Exportar Resultados CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Parâmetros Globais do Lote -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-4 pt-1">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Perfil da Conta</label>
+            <select id="batch-account-type" onchange="calculateBatchAll()" class="w-full text-xs p-1.5 rounded-lg border border-slate-200 bg-white">
+              <option value="CNPJ_NORMAL">CNPJ / MEI</option>
+              <option value="CPF_NORMAL">CPF Normal</option>
+              <option value="CPF_PENALIZADO">CPF Alavancado</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Imposto DAS (%)</label>
+            <input type="number" step="0.1" id="batch-tax" value="6.0" oninput="calculateBatchAll()" class="w-full text-xs p-1.5 rounded-lg border border-slate-200">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Shopee Ads (%)</label>
+            <input type="number" step="0.5" id="batch-ads" value="4.0" oninput="calculateBatchAll()" class="w-full text-xs p-1.5 rounded-lg border border-slate-200">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Avarias/Perdas (%)</label>
+            <input type="number" step="0.1" id="batch-loss" value="1.5" oninput="calculateBatchAll()" class="w-full text-xs p-1.5 rounded-lg border border-slate-200">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Devolução Fácil (R$)</label>
+            <select id="batch-dev-facil" onchange="calculateBatchAll()" class="w-full text-xs p-1.5 rounded-lg border border-slate-200 bg-white">
+              <option value="SIM">Ativo (R$ 0,49)</option>
+              <option value="NAO">Inativo (R$ 0,00)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Itens p/ Pedido</label>
+            <input type="number" min="1" step="1" id="batch-items-order" value="1" oninput="calculateBatchAll()" class="w-full text-xs p-1.5 rounded-lg border border-slate-200">
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela de Produtos do Lote -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-slate-700">Tabela de Itens</span>
+            <span id="batch-row-count" class="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-semibold">3 itens</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="addBatchRow()" class="py-1.5 px-3 text-xs font-semibold rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition flex items-center gap-1">
+              + Adicionar Linha Manual
+            </button>
+            <button onclick="clearBatchRows()" class="py-1.5 px-3 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition">
+              Limpar Todos
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto max-h-[500px]">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-100/90 text-slate-700 font-semibold sticky top-0 z-10 border-b border-slate-200">
+              <tr>
+                <th class="p-3 w-10 text-center">#</th>
+                <th class="p-3 min-w-[180px]">Produto / Identificação</th>
+                <th class="p-3 w-28">SKU</th>
+                <th class="p-3 w-24">CMV (R$)</th>
+                <th class="p-3 w-24">Emb. (R$)</th>
+                <th class="p-3 w-24">Margem (%)</th>
+                <th class="p-3 w-28 bg-orange-50/70 text-orange-950">Preço Venda</th>
+                <th class="p-3 w-28">Repasse Shopee</th>
+                <th class="p-3 w-24 text-emerald-800">Lucro (R$)</th>
+                <th class="p-3 w-20 text-emerald-800">Margem Real</th>
+                <th class="p-3 min-w-[220px]">Observações de Taxas</th>
+                <th class="p-3 w-16 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="batch-tbody" class="divide-y divide-slate-100 text-slate-700">
+              <!-- Linhas geradas via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Resumo Consolidado do Lote -->
+        <div class="bg-slate-50 border-t border-slate-200 p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase font-semibold">Total de SKUs</span>
+            <span class="text-sm font-bold text-slate-800 block" id="batch-sum-count">0</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase font-semibold">Faturamento Teórico (1 un de cada)</span>
+            <span class="text-sm font-bold text-slate-800 block" id="batch-sum-revenue">R$ 0,00</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase font-semibold">Repasse Líquido Estimado</span>
+            <span class="text-sm font-bold text-slate-800 block" id="batch-sum-repasse">R$ 0,00</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase font-semibold">Lucro Médio Consolidado</span>
+            <span class="text-sm font-bold text-emerald-600 block" id="batch-sum-profit">R$ 0,00</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 3: TABELA DE REGRAS E TAXAS -->
+    <div id="tab-rules" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Política de Comissionamento e Taxas Shopee Brasil</h2>
+          <p class="text-xs text-slate-500 mt-1">
+            Entenda detalhadamente como a Shopee estrutura as cobranças por faixas de preço, Devolução Fácil e subsídios PIX.
+          </p>
+        </div>
+
+        <!-- Tabela Comparativa de Faixas -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left border-collapse border border-slate-200 rounded-xl">
+            <thead class="bg-slate-100 text-slate-800 font-bold">
+              <tr>
+                <th class="p-3 border-b border-slate-200">Faixa de Preço do Produto</th>
+                <th class="p-3 border-b border-slate-200">Comissão %</th>
+                <th class="p-3 border-b border-slate-200">Taxa Fixa (CNPJ e CPF Normal)</th>
+                <th class="p-3 border-b border-slate-200">Taxa Fixa (CPF >450 ped/90d)</th>
+                <th class="p-3 border-b border-slate-200">Desconto PIX Shopee</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr>
+                <td class="p-3 font-semibold text-slate-900">Abaixo de R$ 8,00</td>
+                <td class="p-3">20%</td>
+                <td class="p-3">50% do valor do produto</td>
+                <td class="p-3">Regressiva proporcional</td>
+                <td class="p-3 text-slate-400">Não elegível</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="p-3 font-semibold text-slate-900">R$ 8,00 a R$ 79,99</td>
+                <td class="p-3">20%</td>
+                <td class="p-3 font-bold text-orange-700">R$ 4,00</td>
+                <td class="p-3 font-bold text-rose-700">R$ 7,00</td>
+                <td class="p-3 text-slate-400">Não elegível</td>
+              </tr>
+              <tr class="bg-orange-50/40">
+                <td class="p-3 font-semibold text-slate-900">R$ 80,00 a R$ 99,99</td>
+                <td class="p-3 font-bold text-emerald-700">14%</td>
+                <td class="p-3 font-bold text-orange-700">R$ 16,00</td>
+                <td class="p-3 font-bold text-rose-700">R$ 19,00</td>
+                <td class="p-3 font-bold text-emerald-700">5% subsidiado pela Shopee</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-slate-900">R$ 100,00 a R$ 199,99</td>
+                <td class="p-3 font-bold text-emerald-700">14%</td>
+                <td class="p-3 font-bold text-orange-700">R$ 20,00</td>
+                <td class="p-3 font-bold text-rose-700">R$ 23,00</td>
+                <td class="p-3 font-bold text-emerald-700">5% subsidiado pela Shopee</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="p-3 font-semibold text-slate-900">R$ 200,00 a R$ 499,99</td>
+                <td class="p-3 font-bold text-emerald-700">14%</td>
+                <td class="p-3 font-bold text-orange-700">R$ 26,00</td>
+                <td class="p-3 font-bold text-rose-700">R$ 29,00</td>
+                <td class="p-3 font-bold text-emerald-700">5% subsidiado pela Shopee</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-slate-900">A partir de R$ 500,00</td>
+                <td class="p-3 font-bold text-emerald-700">14%</td>
+                <td class="p-3 font-bold text-orange-700">R$ 26,00</td>
+                <td class="p-3 font-bold text-rose-700">R$ 29,00</td>
+                <td class="p-3 text-slate-400">Padrão plataforma</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Regras Especiais em Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+            <h4 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-orange-600"></span>
+              Programa Devolução Fácil Shopee
+            </h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Taxa fixa de <strong>R$ 0,49 cobrada por pedido pago confirmado</strong> na loja enquanto o vendedor estiver elegível e inscrito no programa. Ao calcular o preço unitário de um SKU, essa taxa é diluída pelo número médio de itens vendidos no mesmo pedido.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+            <h4 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              O Fenômeno do "Gargalo dos R$ 80"
+            </h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Ao atingir R$ 80,00, a comissão percentual cai de 20% para 14%, mas a taxa fixa sobre de R$ 4,00 para R$ 16,00. Produtos precificados entre R$ 80 e R$ 88 costumam ter lucro líquido inferior a produtos vendidos a R$ 79,90. Fique atento às recomendações visuais do simulador!
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Rodapé Institucional Agência WB Digital -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 w-full text-center no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-slate-800">Precificador Shopee Pro</span>
+        <span class="text-slate-300">•</span>
+        <span>Simulador de Estratégias & Margens</span>
+      </div>
+      <div>
+        Desenvolvido por <a href="https://agenciawbdigital.com.br" target="_blank" rel="noopener noreferrer" class="font-bold text-orange-600 hover:text-orange-700 underline underline-offset-2 transition-colors">Agência WB Digital</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="https://wa.me/5582988352548?text=Ol%C3%A1!%20Vim%20pela%20Calculadora%20de%20Pre%C3%A7os%20Shopee%20da%20Ag%C3%AAncia%20WB%20Digital." target="_blank" rel="noopener noreferrer" class="text-slate-600 hover:text-emerald-600 transition flex items-center gap-1.5 font-semibold">
+          <svg class="w-4 h-4 text-emerald-500 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+          </svg>
+          WhatsApp: (82) 98835-2548
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Botão Flutuante do WhatsApp -->
+  <a href="https://wa.me/5582988352548?text=Ol%C3%A1!%20Gostaria%20de%20tirar%20d%C3%BAvidas%20sobre%20a%20Calculadora%20de%20Pre%C3%A7os%20Shopee%20e%20gest%C3%A3o%20de%20marketplaces." target="_blank" rel="noopener noreferrer" class="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs py-3 px-4 rounded-full shadow-xl hover:shadow-emerald-500/40 transition-all transform hover:-translate-y-1 active:scale-95 group no-print" title="Falar no WhatsApp com a Agência WB Digital">
+    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+    </svg>
+    <span class="tracking-wide">WhatsApp</span>
+  </a>
+
+  <!-- MODAL DE IMPRESSÃO DA COMPOSIÇÃO DE PREÇO -->
+  <div id="print-modal-backdrop" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative space-y-6 my-8" id="print-modal">
+      
+      <!-- Cabeçalho de Impressão -->
+      <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Composição Financeira & Precificação Shopee</h2>
+          <p class="text-xs text-slate-500 mt-0.5" id="print-date">Data da Simulação: --/--/----</p>
+        </div>
+        <div class="text-right">
+          <span class="text-xs font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-md border border-orange-200">
+            Agência WB Digital
+          </span>
+        </div>
+      </div>
+
+      <!-- Resumo do Produto -->
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div>
+          <span class="text-slate-400 block font-medium">Produto</span>
+          <span class="font-bold text-slate-800 block truncate" id="print-product-name">---</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block font-medium">SKU</span>
+          <span class="font-bold text-slate-800 block" id="print-sku">---</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block font-medium">Perfil Shopee</span>
+          <span class="font-bold text-slate-800 block" id="print-account">---</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block font-medium">Devolução Fácil</span>
+          <span class="font-bold text-slate-800 block" id="print-dev-status">---</span>
+        </div>
+      </div>
+
+      <!-- Tabela Financeira da Composição -->
+      <div>
+        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Estrutura de Formação do Preço</h3>
+        <table class="w-full text-xs text-left border-collapse border border-slate-200">
+          <tbody class="divide-y divide-slate-200">
+            <tr class="bg-slate-100 font-bold text-slate-900">
+              <td class="p-2.5">Preço Final de Venda Sugerido (Anúncio)</td>
+              <td class="p-2.5 text-right font-extrabold text-sm text-slate-950" id="print-table-price">R$ 0,00</td>
+            </tr>
+            <tr>
+              <td class="p-2 text-slate-600">(-) Comissão Percentual Shopee</td>
+              <td class="p-2 text-right text-red-600" id="print-table-comissao">- R$ 0,00</td>
+            </tr>
+            <tr>
+              <td class="p-2 text-slate-600">(-) Taxa Fixa por Item Shopee</td>
+              <td class="p-2 text-right text-red-600" id="print-table-fixa">- R$ 0,00</td>
+            </tr>
+            <tr>
+              <td class="p-2 text-slate-600">(-) Taxa Devolução Fácil (por unidade)</td>
+              <td class="p-2 text-right text-red-600" id="print-table-dev">- R$ 0,00</td>
+            </tr>
+            <tr class="bg-slate-50 font-semibold text-slate-900">
+              <td class="p-2">(=) Repasse Líquido Pago pela Shopee</td>
+              <td class="p-2 text-right font-bold text-slate-900" id="print-table-repasse">R$ 0,00</td>
+            </tr>
+            <tr>
+              <td class="p-2 text-slate-600">(-) Custo do Produto (CMV)</td>
+              <td class="p-2 text-right text-slate-700" id="print-table-cmv">- R$ 0,00</td>
+            </tr>
+            <tr>
+              <td class="p-2 text-slate-600">(-) Embalagem & Insumos</td>
+              <td class="p-2 text-right text-slate-700" id="print-table-emb">- R$ 0,00</td>
+            </tr>
+            <tr>
+              <td class="p-2 text-slate-600">(-) Impostos / DAS</td>
+              <td class="p-2 text-right text-slate-700" id="print-table-tax">- R$ 0,00</td>
+            </tr>
+            <tr>
+              <td class="p-2 text-slate-600">(-) Shopee Ads / Marketing</td>
+              <td class="p-2 text-right text-slate-700" id="print-table-ads">- R$ 0,00</td>
+            </tr>
+            <tr>
+              <td class="p-2 text-slate-600">(-) Provisão de Avarias / Perdas</td>
+              <td class="p-2 text-right text-slate-700" id="print-table-loss">- R$ 0,00</td>
+            </tr>
+            <tr class="bg-emerald-50 font-bold text-emerald-900 border-t-2 border-emerald-400">
+              <td class="p-3 text-sm">(=) Lucro Líquido Real por Unidade</td>
+              <td class="p-3 text-right text-sm font-extrabold" id="print-table-profit">R$ 0,00</td>
+            </tr>
+            <tr class="bg-emerald-50/60 font-semibold text-emerald-800">
+              <td class="p-2">Margem Líquida Real sobre a Venda</td>
+              <td class="p-2 text-right font-bold" id="print-table-margin">0,0%</td>
+            </tr>
+            <tr class="text-slate-600">
+              <td class="p-2">Ponto de Equilíbrio (Margem R$ 0,00)</td>
+              <td class="p-2 text-right font-medium" id="print-table-breakeven">R$ 0,00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Detalhamento de Observações no Relatório -->
+      <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+        <span class="text-[11px] font-bold text-slate-600 uppercase tracking-wide block mb-1">
+          Observações de Tarifas & Detalhes da Operação:
+        </span>
+        <p class="text-xs text-slate-700 leading-relaxed font-mono" id="print-obs-text">
+          ---
+        </p>
+      </div>
+
+      <!-- Rodapé / Botões (ocultos na impressão física) -->
+      <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200 no-print">
+        <button onclick="closePrintModal()" class="py-2 px-4 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+          Fechar
+        </button>
+        <button onclick="window.print()" class="py-2 px-4 text-xs font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+          </svg>
+          Confirmar e Imprimir / Salvar PDF
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Customizado -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2">
+    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span id="toast-msg">Mensagem</span>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       1. ESTADO GLOBAL E CONFIGURAÇÕES
+       ========================================================================== */
+    let currentTab = 'single';
+    let singleCalcMode = 'target'; // 'target' (Margem Alvo) ou 'fixed' (Preço Fixo)
+
+    // Dados iniciais do lote de produtos
+    let batchProducts = [
+      { id: 1, name: 'Fone Bluetooth TWS Pro', sku: 'TWS-01', cost: 28.50, packaging: 2.00, targetMargin: 18.0 },
+      { id: 2, name: 'Cabo USB-C Trançado 2m', sku: 'CAB-02', cost: 5.20, packaging: 1.20, targetMargin: 22.0 },
+      { id: 3, name: 'Suporte Articulado Mesa', sku: 'SUP-03', cost: 42.00, packaging: 3.50, targetMargin: 16.0 }
+    ];
+
+    /* ==========================================================================
+       2. MOTOR MATEMÁTICO SHOPEE 2026
+       ========================================================================== */
+    
+    /**
+     * Retorna a comissão percentual e taxa fixa para um dado preço P e perfil
+     */
+    function getShopeeBracket(P, accountType) {
+      let pct = 0.20;
+      let fixed = 4.00;
+      let isPixEligible = false;
+      let notes = [];
+
+      const isCpfPenalizado = (accountType === 'CPF_PENALIZADO');
+
+      if (P < 8.00) {
+        pct = 0.20;
+        if (isCpfPenalizado) {
+          // Curva regressiva especial para itens abaixo de R$ 12 no CPF penalizado
+          fixed = Math.max(P * 0.5, 4.00);
+          notes.push("Regra de item < R$ 8 com penalidade CPF");
+        } else {
+          // Regra de 50% do valor do item como taxa fixa
+          fixed = P * 0.5;
+          notes.push("Regra item < R$ 8,00: Taxa fixa limitada a 50% do valor (R$ " + fixed.toFixed(2) + ")");
+        }
+      } else if (P < 80.00) {
+        pct = 0.20;
+        fixed = isCpfPenalizado ? 7.00 : 4.00;
+        notes.push("Faixa R$ 8,00 a R$ 79,99: 20% comissão + R$ " + fixed.toFixed(2) + " fixa");
+      } else if (P < 100.00) {
+        pct = 0.14;
+        fixed = isCpfPenalizado ? 19.00 : 16.00;
+        isPixEligible = true;
+        notes.push("Faixa R$ 80,00 a R$ 99,99: 14% comissão + R$ " + fixed.toFixed(2) + " fixa");
+      } else if (P < 200.00) {
+        pct = 0.14;
+        fixed = isCpfPenalizado ? 23.00 : 20.00;
+        isPixEligible = true;
+        notes.push("Faixa R$ 100,00 a R$ 199,99: 14% comissão + R$ " + fixed.toFixed(2) + " fixa");
+      } else {
+        // R$ 200 ou mais
+        pct = 0.14;
+        fixed = isCpfPenalizado ? 29.00 : 26.00;
+        if (P <= 499.99) isPixEligible = true;
+        notes.push("Faixa R$ 200,00+: 14% comissão + R$ " + fixed.toFixed(2) + " fixa");
+      }
+
+      if (isCpfPenalizado) {
+        notes.push("Acréscimo de +R$ 3,00 na taxa fixa aplicado (CPF acima de 450 pedidos/90 dias)");
+      }
+
+      return { pct, fixed, isPixEligible, notes };
+    }
+
+    /**
+     * Calcula o preço ideal (P) a partir de uma margem alvo desejada.
+     * Utiliza teste analítico pelas faixas tarifárias da Shopee.
+     */
+    function solveIdealPrice(cost, packaging, taxPct, adsPct, lossPct, targetMarginPct, accountType, devFacilPerItem) {
+      const fixedCosts = cost + packaging + devFacilPerItem;
+      const variableDeductions = (taxPct + adsPct + lossPct + targetMarginPct) / 100;
+
+      // Definição das faixas a testar: [min, max, comissaoPct, fixaBase]
+      const isCpfPenalizado = (accountType === 'CPF_PENALIZADO');
+      const addFixed = isCpfPenalizado ? 3.00 : 0.00;
+
+      const brackets = [
+        { min: 0.01, max: 7.99, pct: 0.20, fixed: 0, isSub8: true },
+        { min: 8.00, max: 79.99, pct: 0.20, fixed: 4.00 + addFixed, isSub8: false },
+        { min: 80.00, max: 99.99, pct: 0.14, fixed: 16.00 + addFixed, isSub8: false },
+        { min: 100.00, max: 199.99, pct: 0.14, fixed: 20.00 + addFixed, isSub8: false },
+        { min: 200.00, max: 999999.00, pct: 0.14, fixed: 26.00 + addFixed, isSub8: false }
+      ];
+
+      for (const b of brackets) {
+        let P_cand = 0;
+
+        if (b.isSub8) {
+          // Na faixa < 8: Taxa fixa = P/2 (ou seja, 50% de dedução adicional)
+          const totalRate = variableDeductions + b.pct + 0.50;
+          if (totalRate >= 1) continue;
+          P_cand = fixedCosts / (1 - totalRate);
+        } else {
+          const totalRate = variableDeductions + b.pct;
+          if (totalRate >= 1) continue;
+          P_cand = (fixedCosts + b.fixed) / (1 - totalRate);
+        }
+
+        if (P_cand >= b.min && P_cand <= b.max) {
+          return Math.max(0.01, P_cand);
+        }
+      }
+
+      // Se cair exatamente na fronteira ou divergência de descontinuidade, refinamento iterativo
+      let pIter = Math.max(fixedCosts * 1.5, 10.0);
+      for (let i = 0; i < 25; i++) {
+        const info = getShopeeBracket(pIter, accountType);
+        const denom = 1 - (variableDeductions + info.pct);
+        if (denom <= 0.05) break;
+        const pNext = (fixedCosts + info.fixed) / denom;
+        if (Math.abs(pNext - pIter) < 0.01) break;
+        pIter = pNext;
+      }
+
+      return Math.max(0.01, pIter);
+    }
+
+    /**
+     * Calcula todos os custos, repasse e lucro dado um preço de venda P
+     */
+    function evaluatePriceDetails(P, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder) {
+      const devFacilPerItem = devFacilActive ? (0.49 / Math.max(1, itemsPerOrder)) : 0;
+      const shopee = getShopeeBracket(P, accountType);
+
+      const valComissao = P * shopee.pct;
+      const valFixa = shopee.fixed;
+      const valDevFacil = devFacilPerItem;
+      const totalTaxaShopee = valComissao + valFixa + valDevFacil;
+
+      const repasseShopee = Math.max(0, P - totalTaxaShopee);
+
+      const valImposto = P * (taxPct / 100);
+      const valAds = P * (adsPct / 100);
+      const valAvaria = P * (lossPct / 100);
+
+      const totalCustosDiretos = cost + packaging;
+      const totalOutrosGastos = valImposto + valAds + valAvaria + totalCustosDiretos;
+
+      const lucroLiquido = repasseShopee - (valImposto + valAds + valAvaria + totalCustosDiretos);
+      const margemLiquida = P > 0 ? (lucroLiquido / P) * 100 : 0;
+
+      // Ponto de equilíbrio (Breakeven onde lucro = 0)
+      const breakeven = solveIdealPrice(cost, packaging, taxPct, adsPct, lossPct, 0, accountType, devFacilPerItem);
+
+      // Preço com subsídio Pix Shopee (5% de desconto pago pela plataforma)
+      const precoPix = shopee.isPixEligible ? (P * 0.95) : P;
+
+      // Compilar notas de transparência
+      const obsList = [...shopee.notes];
+      if (devFacilActive) {
+        obsList.push("Devolução Fácil ativa: R$ 0,49/pedido diluído em " + itemsPerOrder + " un = R$ " + devFacilPerItem.toFixed(2) + "/item");
+      } else {
+        obsList.push("Devolução Fácil inativa (R$ 0,00)");
+      }
+      if (shopee.isPixEligible) {
+        obsList.push("Subsídio PIX Shopee: Comprador paga R$ " + precoPix.toFixed(2) + " (-5% bancado pela Shopee sem descontar do seu repasse)");
+      }
+
+      return {
+        P,
+        cost,
+        packaging,
+        taxPct,
+        adsPct,
+        lossPct,
+        shopeePct: shopee.pct,
+        valComissao,
+        valFixa,
+        valDevFacil,
+        totalTaxaShopee,
+        repasseShopee,
+        valImposto,
+        valAds,
+        valAvaria,
+        lucroLiquido,
+        margemLiquida,
+        breakeven,
+        precoPix,
+        isPixEligible: shopee.isPixEligible,
+        obs: obsList.join(" | ")
+      };
+    }
+
+    /* ==========================================================================
+       3. CONTROLE DA CALCULADORA INDIVIDUAL
+       ========================================================================== */
+    function setCalcMode(mode) {
+      singleCalcMode = mode;
+      const btnTarget = document.getElementById('btn-mode-target');
+      const btnFixed = document.getElementById('btn-mode-fixed');
+      const targetBox = document.getElementById('target-margin-box');
+      const fixedBox = document.getElementById('fixed-price-box');
+
+      if (mode === 'target') {
+        btnTarget.className = "py-2 px-3 text-xs font-semibold rounded-lg bg-orange-600 text-white shadow-xs transition";
+        btnFixed.className = "py-2 px-3 text-xs font-semibold rounded-lg bg-white text-slate-700 hover:bg-orange-100/50 transition";
+        targetBox.classList.remove('hidden');
+        fixedBox.classList.add('hidden');
+      } else {
+        btnFixed.className = "py-2 px-3 text-xs font-semibold rounded-lg bg-orange-600 text-white shadow-xs transition";
+        btnTarget.className = "py-2 px-3 text-xs font-semibold rounded-lg bg-white text-slate-700 hover:bg-orange-100/50 transition";
+        fixedBox.classList.remove('hidden');
+        targetBox.classList.add('hidden');
+      }
+      calculateSingle();
+    }
+
+    function calculateSingle() {
+      const cost = parseFloat(document.getElementById('p-cost').value) || 0;
+      const packaging = parseFloat(document.getElementById('p-packaging').value) || 0;
+      const targetMargin = parseFloat(document.getElementById('p-target-margin').value) || 0;
+      const fixedPrice = parseFloat(document.getElementById('p-fixed-price').value) || 0;
+      const accountType = document.getElementById('p-account-type').value;
+      const taxPct = parseFloat(document.getElementById('p-tax').value) || 0;
+      const adsPct = parseFloat(document.getElementById('p-ads').value) || 0;
+      const lossPct = parseFloat(document.getElementById('p-loss').value) || 0;
+      const devFacilActive = document.getElementById('p-dev-facil').checked;
+      const itemsPerOrder = parseInt(document.getElementById('p-items-per-order').value) || 1;
+
+      const devFacilPerItem = devFacilActive ? (0.49 / Math.max(1, itemsPerOrder)) : 0;
+
+      let finalP = 0;
+      if (singleCalcMode === 'target') {
+        finalP = solveIdealPrice(cost, packaging, taxPct, adsPct, lossPct, targetMargin, accountType, devFacilPerItem);
+      } else {
+        finalP = fixedPrice;
+      }
+
+      const res = evaluatePriceDetails(finalP, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
+
+      // Atualizar Cards Principais
+      document.getElementById('res-price').innerText = formatBRL(res.P);
+      document.getElementById('res-pix-price').innerText = res.isPixEligible ? `${formatBRL(res.precoPix)} (-5% Pix)` : `${formatBRL(res.P)} (Sem Desc.)`;
+      document.getElementById('res-repasse').innerText = formatBRL(res.repasseShopee);
+      document.getElementById('res-repasse-pct').innerText = `${((res.repasseShopee / res.P) * 100).toFixed(1)}% do preço`;
+      
+      const profitEl = document.getElementById('res-profit');
+      profitEl.innerText = formatBRL(res.lucroLiquido);
+      profitEl.className = res.lucroLiquido < 0 
+        ? "text-sm sm:text-base font-bold text-rose-500 block mt-0.5" 
+        : "text-sm sm:text-base font-bold text-emerald-400 block mt-0.5";
+
+      const marginEl = document.getElementById('res-margin');
+      marginEl.innerText = `${res.margemLiquida.toFixed(1)}% margem`;
+      marginEl.className = res.margemLiquida < 0 
+        ? "text-[10px] text-rose-400 font-bold" 
+        : "text-[10px] text-emerald-300 font-semibold";
+
+      document.getElementById('res-breakeven').innerText = formatBRL(res.breakeven);
+
+      // Alerta e Análise Avançada de Gargalo dos R$ 80
+      const alertZone = document.getElementById('alert-zone-80');
+      if (res.P >= 79.50 && res.P <= 92.50) {
+        alertZone.classList.remove('hidden');
+        renderGargaloAnalysis(res.P, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
+      } else {
+        alertZone.classList.add('hidden');
+      }
+
+      // Atualizar DRE
+      document.getElementById('dre-faturamento').innerText = `${formatBRL(res.P)} (100%)`;
+      document.getElementById('dre-taxa-pct').innerText = `${(res.shopeePct * 100).toFixed(0)}%`;
+      document.getElementById('dre-taxa-comissao').innerText = `- ${formatBRL(res.valComissao)}`;
+      document.getElementById('dre-taxa-fixa').innerText = `- ${formatBRL(res.valFixa)}`;
+      
+      const devRow = document.getElementById('dre-row-dev-facil');
+      if (devFacilActive) {
+        devRow.classList.remove('hidden');
+        document.getElementById('dre-taxa-dev').innerText = `- ${formatBRL(res.valDevFacil)}`;
+      } else {
+        devRow.classList.add('hidden');
+      }
+
+      document.getElementById('dre-repasse').innerText = formatBRL(res.repasseShopee);
+      document.getElementById('dre-cmv').innerText = `- ${formatBRL(res.cost)}`;
+      document.getElementById('dre-embalagem').innerText = `- ${formatBRL(res.packaging)}`;
+      document.getElementById('dre-imposto-pct').innerText = `${taxPct.toFixed(1)}%`;
+      document.getElementById('dre-imposto').innerText = `- ${formatBRL(res.valImposto)}`;
+      document.getElementById('dre-ads-pct').innerText = `${adsPct.toFixed(1)}%`;
+      document.getElementById('dre-ads').innerText = `- ${formatBRL(res.valAds)}`;
+      document.getElementById('dre-avaria-pct').innerText = `${lossPct.toFixed(1)}%`;
+      document.getElementById('dre-avaria').innerText = `- ${formatBRL(res.valAvaria)}`;
+      
+      const dreLucroEl = document.getElementById('dre-lucro');
+      dreLucroEl.innerText = `${formatBRL(res.lucroLiquido)} (${res.margemLiquida.toFixed(1)}%)`;
+      const dreLucroRow = dreLucroEl.parentElement;
+      if (res.lucroLiquido < 0) {
+        dreLucroRow.className = "flex justify-between pt-2 text-sm font-extrabold text-rose-700 bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-300";
+      } else {
+        dreLucroRow.className = "flex justify-between pt-2 text-sm font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200";
+      }
+
+      // Observações de Taxas (com verificação segura de existência)
+      const obsBox = document.getElementById('res-obs-box');
+      if (obsBox) {
+        obsBox.innerText = res.obs;
+      }
+
+      // Salvar em cache de impressão
+      window.lastSingleCalc = res;
+    }
+
+    /**
+     * OTIMIZADOR DE GARGALOS INVISÍVEIS:
+     * Calcula a curva de lucro entre R$ 75 e R$ 95 e renderiza no card
+     */
+    function renderGargaloAnalysis(currentP, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder) {
+      // Comparar lucro de R$ 79,90 vs Preço Atual
+      const res7990 = evaluatePriceDetails(79.90, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
+      const resCurrent = evaluatePriceDetails(currentP, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
+      const diffLucro = res7990.lucroLiquido - resCurrent.lucroLiquido;
+
+      const alertText = document.getElementById('alert-zone-80-text');
+      if (currentP > 79.90 && diffLucro > 0.05) {
+        alertText.innerHTML = `Seu preço de <strong>${formatBRL(currentP)}</strong> gera <strong>${formatBRL(resCurrent.lucroLiquido)}</strong> de lucro. Se você vender a <strong>R$ 79,90</strong>, seu lucro salta para <strong>${formatBRL(res7990.lucroLiquido)}</strong> (<span class="text-emerald-700 font-extrabold">+${formatBRL(diffLucro)} por venda no seu bolso!</span>). Isso ocorre porque a taxa fixa da Shopee salta bruscamente de R$ 4,00 para R$ 16,00.`;
+      } else {
+        alertText.innerHTML = `Atenção: A Shopee altera a taxa fixa de R$ 4,00 para R$ 16,00 ao cruzar R$ 80,00. Mantenha seu anúncio a R$ 79,90 ou eleve o preço para compensar a mordida da tarifa fixa.`;
+      }
+
+      // Pontos da Curva de R$ 75 a R$ 95
+      const curvePrices = [75.00, 78.00, 79.90, 80.50, 83.00, 86.00, 89.00, 92.00, 95.00];
+      const grid = document.getElementById('gargalo-curve-grid');
+      grid.innerHTML = '';
+
+      let indifferencePrice = 90.00;
+      let foundIndifference = false;
+
+      curvePrices.forEach(pTest => {
+        const rTest = evaluatePriceDetails(pTest, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
+        const isCurrent = Math.abs(pTest - currentP) < 0.6;
+        const isPeak = (pTest === 79.90);
+        const isValley = (pTest === 80.50);
+
+        if (!foundIndifference && pTest > 80 && rTest.lucroLiquido >= res7990.lucroLiquido) {
+          indifferencePrice = pTest;
+          foundIndifference = true;
+        }
+
+        const col = document.createElement('div');
+        col.className = `p-2 rounded-xl border text-center transition-all ${
+          isPeak ? 'bg-emerald-50 border-emerald-400 ring-2 ring-emerald-500/20 shadow-xs' :
+          isValley ? 'bg-rose-50 border-rose-300' :
+          isCurrent ? 'bg-orange-50 border-orange-400 font-bold' :
+          'bg-slate-50 border-slate-200'
+        }`;
+
+        col.innerHTML = `
+          <div class="text-[10px] font-bold ${isPeak ? 'text-emerald-800' : isValley ? 'text-rose-800' : 'text-slate-600'}">
+            ${isPeak ? '★ PICO MÁXIMO' : isValley ? '▼ POÇO DE TAXAS' : formatBRL(pTest)}
+          </div>
+          <div class="text-xs font-extrabold mt-1 ${rTest.lucroLiquido >= res7990.lucroLiquido ? 'text-emerald-700' : 'text-slate-800'}">
+            ${formatBRL(rTest.lucroLiquido)}
+          </div>
+          <div class="text-[10px] text-slate-400 mt-0.5">${rTest.margemLiquida.toFixed(1)}% margem</div>
+          <div class="text-[9px] mt-1 font-mono text-slate-500">Taxa R$ ${(rTest.valFixa).toFixed(0)}</div>
+        `;
+        grid.appendChild(col);
+      });
+
+      document.getElementById('gargalo-indifference-price').innerText = formatBRL(indifferencePrice);
+    }
+
+    function applyGargaloAdjustment() {
+      setCalcMode('fixed');
+      document.getElementById('p-fixed-price').value = "79.90";
+      calculateSingle();
+      showToast("Preço reajustado com sucesso para R$ 79,90! Lucro otimizado.");
+    }
+
+    function resetSingleForm() {
+      document.getElementById('p-title').value = '';
+      document.getElementById('p-sku').value = '';
+      document.getElementById('p-cost').value = '25.00';
+      document.getElementById('p-packaging').value = '2.00';
+      document.getElementById('p-target-margin').value = '18.0';
+      document.getElementById('p-fixed-price').value = '69.90';
+      calculateSingle();
+      showToast("Formulário limpo com sucesso!");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function renderBatchTable() {
+      const tbody = document.getElementById('batch-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const accountType = document.getElementById('batch-account-type')?.value || 'CNPJ_NORMAL';
+      const taxPct = parseFloat(document.getElementById('batch-tax')?.value) || 0;
+      const adsPct = parseFloat(document.getElementById('batch-ads')?.value) || 0;
+      const lossPct = parseFloat(document.getElementById('batch-loss')?.value) || 0;
+      const devFacilActive = (document.getElementById('batch-dev-facil')?.value === 'SIM');
+      const itemsPerOrder = parseInt(document.getElementById('batch-items-order')?.value) || 1;
+      const devFacilPerItem = devFacilActive ? (0.49 / itemsPerOrder) : 0;
+
+      let sumRevenue = 0;
+      let sumRepasse = 0;
+      let sumProfit = 0;
+
+      batchProducts.forEach((item, idx) => {
+        const idealPrice = solveIdealPrice(
+          item.cost,
+          item.packaging,
+          taxPct,
+          adsPct,
+          lossPct,
+          item.targetMargin,
+          accountType,
+          devFacilPerItem
+        );
+
+        const res = evaluatePriceDetails(
+          idealPrice,
+          item.cost,
+          item.packaging,
+          taxPct,
+          adsPct,
+          lossPct,
+          accountType,
+          devFacilActive,
+          itemsPerOrder
+        );
+
+        sumRevenue += res.P;
+        sumRepasse += res.repasseShopee;
+        sumProfit += res.lucroLiquido;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-3 text-center text-slate-400 font-mono">${idx + 1}</td>
+          <td class="p-3">
+            <input type="text" value="${escapeHtml(item.name)}" onchange="updateBatchItem(${item.id}, 'name', this.value)" class="w-full text-xs font-semibold px-2 py-1 rounded border border-slate-200 focus:outline-none focus:border-orange-500">
+          </td>
+          <td class="p-3">
+            <input type="text" value="${escapeHtml(item.sku)}" onchange="updateBatchItem(${item.id}, 'sku', this.value)" class="w-full text-xs px-2 py-1 rounded border border-slate-200 font-mono text-slate-600 focus:outline-none focus:border-orange-500">
+          </td>
+          <td class="p-3">
+            <input type="number" step="0.01" value="${item.cost.toFixed(2)}" onchange="updateBatchItem(${item.id}, 'cost', parseFloat(this.value)||0)" class="w-full text-xs px-2 py-1 rounded border border-slate-200 text-right font-mono focus:outline-none focus:border-orange-500">
+          </td>
+          <td class="p-3">
+            <input type="number" step="0.01" value="${item.packaging.toFixed(2)}" onchange="updateBatchItem(${item.id}, 'packaging', parseFloat(this.value)||0)" class="w-full text-xs px-2 py-1 rounded border border-slate-200 text-right font-mono focus:outline-none focus:border-orange-500">
+          </td>
+          <td class="p-3">
+            <input type="number" step="0.5" value="${item.targetMargin.toFixed(1)}" onchange="updateBatchItem(${item.id}, 'targetMargin', parseFloat(this.value)||0)" class="w-full text-xs font-bold text-orange-600 px-2 py-1 rounded border border-slate-200 text-right focus:outline-none focus:border-orange-500">
+          </td>
+          <td class="p-3 font-bold bg-orange-50/50 text-orange-950 font-mono">
+            ${formatBRL(res.P)}
+          </td>
+          <td class="p-3 font-semibold font-mono text-slate-700">
+            ${formatBRL(res.repasseShopee)}
+          </td>
+          <td class="p-3 font-bold font-mono ${res.lucroLiquido >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+            ${formatBRL(res.lucroLiquido)}
+          </td>
+          <td class="p-3 font-semibold ${res.margemLiquida >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+            ${res.margemLiquida.toFixed(1)}%
+          </td>
+          <td class="p-3 text-[11px] text-slate-500 leading-tight">
+            Comissão: ${(res.shopeePct * 100).toFixed(0)}% + Fixa: ${formatBRL(res.valFixa)} ${res.isPixEligible ? '• Pix -5%' : ''}
+          </td>
+          <td class="p-3 text-center">
+            <button onclick="removeBatchRow(${item.id})" title="Remover item" class="text-slate-400 hover:text-rose-600 p-1 rounded hover:bg-rose-50 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const countEl = document.getElementById('batch-row-count');
+      const sumCountEl = document.getElementById('batch-sum-count');
+      const sumRevEl = document.getElementById('batch-sum-revenue');
+      const sumRepEl = document.getElementById('batch-sum-repasse');
+      const sumProfEl = document.getElementById('batch-sum-profit');
+
+      if (countEl) countEl.innerText = `${batchProducts.length} itens`;
+      if (sumCountEl) sumCountEl.innerText = batchProducts.length;
+      if (sumRevEl) sumRevEl.innerText = formatBRL(sumRevenue);
+      if (sumRepEl) sumRepEl.innerText = formatBRL(sumRepasse);
+      if (sumProfEl) {
+        sumProfEl.innerText = formatBRL(sumProfit);
+        sumProfEl.className = sumProfit < 0 
+          ? "text-sm font-bold text-rose-600 block" 
+          : "text-sm font-bold text-emerald-600 block";
+      }
+    }
+
+    function addBatchRow() {
+      const nextId = batchProducts.length > 0 ? Math.max(...batchProducts.map(p => p.id)) + 1 : 1;
+      batchProducts.push({
+        id: nextId,
+        name: 'Novo Produto ' + nextId,
+        sku: 'SKU-' + nextId,
+        cost: 20.00,
+        packaging: 2.00,
+        targetMargin: 18.0
+      });
+      renderBatchTable();
+      showToast("Item adicionado ao lote.");
+    }
+
+    function removeBatchRow(id) {
+      batchProducts = batchProducts.filter(p => p.id !== id);
+      renderBatchTable();
+    }
+
+    function updateBatchItem(id, field, value) {
+      const item = batchProducts.find(p => p.id === id);
+      if (item) {
+        item[field] = value;
+        renderBatchTable();
+      }
+    }
+
+    function calculateBatchAll() {
+      renderBatchTable();
+    }
+
+    function clearBatchRows() {
+      if (batchProducts.length === 0) return;
+      batchProducts = [];
+      renderBatchTable();
+      showToast("Todos os itens do lote foram limpos.");
+    }
+
+    function downloadCsvTemplate() {
+      const csvContent = "Nome;SKU;Custo_CMV;Embalagem;Margem_Alvo_Pct\n" +
+        "Fone Bluetooth TWS Pro;TWS-01;28.50;2.00;18.0\n" +
+        "Cabo USB-C Trancado;CAB-02;5.20;1.20;22.0\n" +
+        "Suporte Articulado Mesa;SUP-03;42.00;3.50;16.0\n";
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "modelo_precificacao_shopee.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Modelo CSV baixado com sucesso!");
+    }
+
+    function handleCsvImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const text = e.target.result;
+          const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+          if (lines.length <= 1) {
+            showToast("Arquivo CSV vazio ou sem dados.");
+            return;
+          }
+
+          const delimiter = lines[0].includes(';') ? ';' : ',';
+          const newItems = [];
+          let nextId = Date.now();
+
+          for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(delimiter).map(c => c.trim().replace(/^["']|["']$/g, ''));
+            if (cols.length >= 3) {
+              const name = cols[0] || `Item ${i}`;
+              const sku = cols[1] || `SKU-${i}`;
+              const cost = parseFloat(cols[2].replace(',', '.')) || 0;
+              const packaging = cols[3] ? (parseFloat(cols[3].replace(',', '.')) || 0) : 0;
+              const targetMargin = cols[4] ? (parseFloat(cols[4].replace(',', '.')) || 15.0) : 15.0;
+
+              newItems.push({
+                id: nextId++,
+                name,
+                sku,
+                cost,
+                packaging,
+                targetMargin
+              });
+            }
+          }
+
+          if (newItems.length > 0) {
+            batchProducts = newItems;
+            renderBatchTable();
+            showToast(`${newItems.length} produtos importados com sucesso!`);
+          } else {
+            showToast("Nenhum dado válido encontrado no CSV.");
+          }
+        } catch (err) {
+          console.error(err);
+          showToast("Erro ao processar o arquivo CSV.");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function exportBatchCsv() {
+      if (batchProducts.length === 0) {
+        showToast("Nenhum produto no lote para exportar.");
+        return;
+      }
+
+      const accountType = document.getElementById('batch-account-type')?.value || 'CNPJ_NORMAL';
+      const taxPct = parseFloat(document.getElementById('batch-tax')?.value) || 0;
+      const adsPct = parseFloat(document.getElementById('batch-ads')?.value) || 0;
+      const lossPct = parseFloat(document.getElementById('batch-loss')?.value) || 0;
+      const devFacilActive = (document.getElementById('batch-dev-facil')?.value === 'SIM');
+      const itemsPerOrder = parseInt(document.getElementById('batch-items-order')?.value) || 1;
+      const devFacilPerItem = devFacilActive ? (0.49 / itemsPerOrder) : 0;
+
+      let csvContent = "Nome;SKU;CMV_R$;Embalagem_R$;Margem_Alvo_Pct;Preco_Venda_R$;Repasse_Shopee_R$;Lucro_Liquido_R$;Margem_Real_Pct;Taxa_Comissao_Pct;Taxa_Fixa_R$\n";
+
+      batchProducts.forEach(item => {
+        const idealPrice = solveIdealPrice(item.cost, item.packaging, taxPct, adsPct, lossPct, item.targetMargin, accountType, devFacilPerItem);
+        const res = evaluatePriceDetails(idealPrice, item.cost, item.packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
+
+        csvContent += `"${item.name}";"${item.sku}";${item.cost.toFixed(2)};${item.packaging.toFixed(2)};${item.targetMargin.toFixed(1)};${res.P.toFixed(2)};${res.repasseShopee.toFixed(2)};${res.lucroLiquido.toFixed(2)};${res.margemLiquida.toFixed(1)};${(res.shopeePct * 100).toFixed(0)};${res.valFixa.toFixed(2)}\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "resultados_precificacao_shopee.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Planilha de resultados exportada com sucesso!");
+    }
+
+    function openPrintModal() {
+      if (!window.lastSingleCalc) calculateSingle();
+      const res = window.lastSingleCalc;
+      if (!res) return;
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const printDateEl = document.getElementById('print-date');
+      if (printDateEl) printDateEl.innerText = `Data da Simulação: ${dateStr}`;
+
+      const titleVal = document.getElementById('p-title')?.value || 'Produto Não Identificado';
+      const skuVal = document.getElementById('p-sku')?.value || 'SEM-SKU';
+      const accountVal = document.getElementById('p-account-type')?.value || 'CNPJ_NORMAL';
+      const devVal = document.getElementById('p-dev-facil')?.checked ? 'Ativo (R$ 0,49)' : 'Inativo';
+
+      const accountLabels = {
+        'CNPJ_NORMAL': 'CNPJ / MEI (Padrão)',
+        'CPF_NORMAL': 'CPF Normal (≤ 450 ped)',
+        'CPF_PENALIZADO': 'CPF Alavancado (> 450 ped)'
+      };
+
+      const nameEl = document.getElementById('print-product-name');
+      if (nameEl) nameEl.innerText = titleVal;
+      const skuEl = document.getElementById('print-sku');
+      if (skuEl) skuEl.innerText = skuVal;
+      const accEl = document.getElementById('print-account');
+      if (accEl) accEl.innerText = accountLabels[accountVal] || accountVal;
+      const devEl = document.getElementById('print-dev-status');
+      if (devEl) devEl.innerText = devVal;
+
+      document.getElementById('print-table-price').innerText = formatBRL(res.P);
+      document.getElementById('print-table-comissao').innerText = `- ${formatBRL(res.valComissao)} (${(res.shopeePct * 100).toFixed(0)}%)`;
+      document.getElementById('print-table-fixa').innerText = `- ${formatBRL(res.valFixa)}`;
+      document.getElementById('print-table-dev').innerText = `- ${formatBRL(res.valDevFacil)}`;
+      document.getElementById('print-table-repasse').innerText = formatBRL(res.repasseShopee);
+      document.getElementById('print-table-cmv').innerText = `- ${formatBRL(res.cost)}`;
+      document.getElementById('print-table-emb').innerText = `- ${formatBRL(res.packaging)}`;
+      document.getElementById('print-table-tax').innerText = `- ${formatBRL(res.valImposto)} (${res.taxPct.toFixed(1)}%)`;
+      document.getElementById('print-table-ads').innerText = `- ${formatBRL(res.valAds)} (${res.adsPct.toFixed(1)}%)`;
+      document.getElementById('print-table-loss').innerText = `- ${formatBRL(res.valAvaria)} (${res.lossPct.toFixed(1)}%)`;
+      
+      const printProfitEl = document.getElementById('print-table-profit');
+      printProfitEl.innerText = formatBRL(res.lucroLiquido);
+      printProfitEl.parentElement.className = res.lucroLiquido < 0 
+        ? "bg-rose-50 font-bold text-rose-800 border-t-2 border-rose-400" 
+        : "bg-emerald-50 font-bold text-emerald-900 border-t-2 border-emerald-400";
+
+      const printMarginEl = document.getElementById('print-table-margin');
+      printMarginEl.innerText = `${res.margemLiquida.toFixed(1)}%`;
+      printMarginEl.className = res.margemLiquida < 0 ? "p-2 text-right font-bold text-rose-700" : "p-2 text-right font-bold text-emerald-700";
+
+      document.getElementById('print-table-breakeven').innerText = formatBRL(res.breakeven);
+
+      const obsTextEl = document.getElementById('print-obs-text');
+      if (obsTextEl) obsTextEl.innerText = res.obs;
+
+      const modal = document.getElementById('print-modal-backdrop');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closePrintModal() {
+      const modal = document.getElementById('print-modal-backdrop');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function copySingleSummary() {
+      if (!window.lastSingleCalc) calculateSingle();
+      const res = window.lastSingleCalc;
+      if (!res) return;
+
+      const titleVal = document.getElementById('p-title')?.value || 'Produto';
+      const skuVal = document.getElementById('p-sku')?.value || 'N/A';
+
+      const summary = `*Composição de Preço Shopee - Agência WB Digital*
+📦 *Produto:* ${titleVal} (SKU: ${skuVal})
+💰 *Preço Recomendado:* ${formatBRL(res.P)}
+⚡ *Preço no PIX Shopee:* ${res.isPixEligible ? formatBRL(res.precoPix) + ' (-5% subsidiado)' : 'Sem desconto'}
+💳 *Repasse Líquido Shopee:* ${formatBRL(res.repasseShopee)}
+💵 *Lucro Líquido Real:* ${formatBRL(res.lucroLiquido)} (${res.margemLiquida.toFixed(1)}% de margem)
+⚖️ *Ponto de Equilíbrio:* ${formatBRL(res.breakeven)}
+
+*Regras Tarifárias:* ${res.obs}`;
+
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = summary;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      try {
+        document.execCommand('copy');
+        showToast("Resumo copiado para a área de transferência!");
+      } catch (err) {
+        console.error(err);
+        showToast("Erro ao copiar para a área de transferência.");
+      }
+      document.body.removeChild(tempTextArea);
+    }
+
+    /* ==========================================================================
+       6. MÓDULO DE COMBOS, KITS E ESCALA DE CARRINHO
+       ========================================================================== */
+    function syncComboFromSingle() {
+      const cost = parseFloat(document.getElementById('p-cost').value) || 28.50;
+      const pkg = parseFloat(document.getElementById('p-packaging').value) || 2.00;
+      const singlePrice = window.lastSingleCalc ? window.lastSingleCalc.P : 69.90;
+      const accountType = document.getElementById('p-account-type').value;
+
+      document.getElementById('combo-cost').value = cost.toFixed(2);
+      document.getElementById('combo-base-price').value = singlePrice.toFixed(2);
+      document.getElementById('combo-pkg-1').value = pkg.toFixed(2);
+      document.getElementById('combo-pkg-2').value = (pkg * 1.3).toFixed(2);
+      document.getElementById('combo-pkg-3').value = (pkg * 1.6).toFixed(2);
+      document.getElementById('combo-account-type').value = accountType;
+
+      calculateCombos();
+      showToast("Dados do simulador individual sincronizados com sucesso!");
+    }
+
+    function calculateCombos() {
+      const costUnit = parseFloat(document.getElementById('combo-cost').value) || 0;
+      const priceUnit = parseFloat(document.getElementById('combo-base-price').value) || 0;
+      const pkg1 = parseFloat(document.getElementById('combo-pkg-1').value) || 0;
+      const pkg2 = parseFloat(document.getElementById('combo-pkg-2').value) || 0;
+      const pkg3 = parseFloat(document.getElementById('combo-pkg-3').value) || 0;
+      const disc2Pct = parseFloat(document.getElementById('combo-disc-2').value) || 0;
+      const disc3Pct = parseFloat(document.getElementById('combo-disc-3').value) || 0;
+      const accountType = document.getElementById('combo-account-type').value;
+
+      const taxPct = parseFloat(document.getElementById('p-tax')?.value) || 6.0;
+      const adsPct = parseFloat(document.getElementById('p-ads')?.value) || 4.0;
+      const lossPct = parseFloat(document.getElementById('p-loss')?.value) || 1.5;
+
+      // 1. Unidade Individual
+      const res1 = evaluatePriceDetails(priceUnit, costUnit, pkg1, taxPct, adsPct, lossPct, accountType, true, 1);
+
+      // 2. Kit com 2 Unidades
+      const rawPrice2 = priceUnit * 2;
+      const finalPrice2 = rawPrice2 * (1 - disc2Pct / 100);
+      const res2 = evaluatePriceDetails(finalPrice2, costUnit * 2, pkg2, taxPct, adsPct, lossPct, accountType, true, 1);
+      const profitPerPiece2 = res2.lucroLiquido / 2;
+      const packagingSavings2 = (pkg1 * 2) - pkg2;
+      const feeSavings2 = (res1.valFixa * 2) - res2.valFixa;
+
+      // Desconto máximo seguro no Kit 2 para empatar com 2x o lucro da unidade:
+      // LucroKit2 = 2 * Lucro1 -> solve ideal price with profit target = 2 * res1.lucroLiquido
+      const maxDiscount2Pct = Math.max(0, ((rawPrice2 - (costUnit * 2 + pkg2 + res2.valFixa + (2 * res1.lucroLiquido)) / (1 - (taxPct + adsPct + lossPct + (res2.shopeePct * 100)) / 100)) / rawPrice2) * 100);
+
+      // 3. Kit com 3 Unidades
+      const rawPrice3 = priceUnit * 3;
+      const finalPrice3 = rawPrice3 * (1 - disc3Pct / 100);
+      const res3 = evaluatePriceDetails(finalPrice3, costUnit * 3, pkg3, taxPct, adsPct, lossPct, accountType, true, 1);
+      const profitPerPiece3 = res3.lucroLiquido / 3;
+      const packagingSavings3 = (pkg1 * 3) - pkg3;
+      const feeSavings3 = (res1.valFixa * 3) - res3.valFixa;
+
+      const maxDiscount3Pct = Math.max(0, ((rawPrice3 - (costUnit * 3 + pkg3 + res3.valFixa + (3 * res1.lucroLiquido)) / (1 - (taxPct + adsPct + lossPct + (res3.shopeePct * 100)) / 100)) / rawPrice3) * 100);
+
+      const grid = document.getElementById('combo-cards-grid');
+      grid.innerHTML = `
+        <!-- Card Unitário -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Venda Unitária (1x)</span>
+            <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold">Base</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 block font-medium">Preço do Anúncio</span>
+            <div class="text-2xl font-extrabold text-slate-900">${formatBRL(res1.P)}</div>
+          </div>
+          <div class="space-y-1.5 text-xs text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex justify-between"><span>Taxa Fixa Shopee:</span> <span class="font-bold text-rose-600">${formatBRL(res1.valFixa)}</span></div>
+            <div class="flex justify-between"><span>Embalagem:</span> <span>${formatBRL(pkg1)}</span></div>
+            <div class="flex justify-between"><span>Repasse Líquido:</span> <span class="font-bold text-slate-800">${formatBRL(res1.repasseShopee)}</span></div>
+            <div class="flex justify-between pt-2 text-sm font-bold border-t border-slate-100 ${res1.lucroLiquido < 0 ? 'text-rose-600' : 'text-emerald-600'}">
+              <span>Lucro por Peça:</span>
+              <span>${formatBRL(res1.lucroLiquido)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Kit 2 Peças -->
+        <div class="bg-blue-50/60 rounded-2xl p-5 border-2 border-blue-200 shadow-xs space-y-4 relative">
+          <span class="absolute -top-3 right-4 bg-blue-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs">Kit Recomendado</span>
+          <div class="flex justify-between items-center border-b border-blue-100 pb-2">
+            <span class="text-xs font-bold text-blue-900 uppercase">Kit Combo com 2 Unidades</span>
+            <span class="text-xs text-blue-700 font-bold">-${disc2Pct}% Desc.</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-500 block font-medium">Preço no Anúncio (2 peças)</span>
+            <div class="text-2xl font-extrabold text-blue-950">${formatBRL(res2.P)}</div>
+            <span class="text-[10px] text-slate-400 line-through">De ${formatBRL(rawPrice2)}</span>
+          </div>
+          <div class="space-y-1.5 text-xs text-slate-700 border-t border-blue-100 pt-3">
+            <div class="flex justify-between text-emerald-700 font-semibold">
+              <span>Economia de Taxas & Insumos:</span>
+              <span>+${formatBRL(packagingSavings2 + feeSavings2)}</span>
+            </div>
+            <div class="flex justify-between"><span>Taxa Fixa Combo:</span> <span class="font-bold">${formatBRL(res2.valFixa)}</span></div>
+            <div class="flex justify-between font-bold ${res2.lucroLiquido < 0 ? 'text-rose-600' : 'text-slate-900'}">
+              <span>Lucro Total no Pedido:</span> 
+              <span>${formatBRL(res2.lucroLiquido)}</span>
+            </div>
+            <div class="flex justify-between pt-2 text-sm font-extrabold border-t border-blue-200 ${profitPerPiece2 < 0 ? 'text-rose-600' : 'text-emerald-700'}">
+              <span>Lucro Real por Peça:</span>
+              <span>${formatBRL(profitPerPiece2)}</span>
+            </div>
+          </div>
+          <div class="bg-white/80 p-2 rounded-lg text-[10px] text-slate-600 border border-blue-100">
+            Desconto Máximo Sem Perder Margem Unitária: <strong class="text-blue-900">${isNaN(maxDiscount2Pct) ? '0%' : maxDiscount2Pct.toFixed(1) + '%'}</strong>
+          </div>
+        </div>
+
+        <!-- Card Kit 3 Peças -->
+        <div class="bg-indigo-50/60 rounded-2xl p-5 border border-indigo-200 shadow-xs space-y-4">
+          <div class="flex justify-between items-center border-b border-indigo-100 pb-2">
+            <span class="text-xs font-bold text-indigo-900 uppercase">Kit Combo com 3 Unidades</span>
+            <span class="text-xs text-indigo-700 font-bold">-${disc3Pct}% Desc.</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-500 block font-medium">Preço no Anúncio (3 peças)</span>
+            <div class="text-2xl font-extrabold text-indigo-950">${formatBRL(res3.P)}</div>
+            <span class="text-[10px] text-slate-400 line-through">De ${formatBRL(rawPrice3)}</span>
+          </div>
+          <div class="space-y-1.5 text-xs text-slate-700 border-t border-indigo-100 pt-3">
+            <div class="flex justify-between text-emerald-700 font-semibold">
+              <span>Economia de Taxas & Insumos:</span>
+              <span>+${formatBRL(packagingSavings3 + feeSavings3)}</span>
+            </div>
+            <div class="flex justify-between"><span>Taxa Fixa Combo:</span> <span class="font-bold">${formatBRL(res3.valFixa)}</span></div>
+            <div class="flex justify-between font-bold ${res3.lucroLiquido < 0 ? 'text-rose-600' : 'text-slate-900'}">
+              <span>Lucro Total no Pedido:</span> 
+              <span>${formatBRL(res3.lucroLiquido)}</span>
+            </div>
+            <div class="flex justify-between pt-2 text-sm font-extrabold border-t border-indigo-200 ${profitPerPiece3 < 0 ? 'text-rose-600' : 'text-emerald-700'}">
+              <span>Lucro Real por Peça:</span>
+              <span>${formatBRL(profitPerPiece3)}</span>
+            </div>
+          </div>
+          <div class="bg-white/80 p-2 rounded-lg text-[10px] text-slate-600 border border-indigo-100">
+            Desconto Máximo Sem Perder Margem Unitária: <strong class="text-indigo-900">${isNaN(maxDiscount3Pct) ? '0%' : maxDiscount3Pct.toFixed(1) + '%'}</strong>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ==========================================================================
+       7. MÓDULO DE CUPONS, OFERTAS RELÂMPAGO & ELASTICIDADE
+       ========================================================================== */
+    function syncPromoFromSingle() {
+      if (!window.lastSingleCalc) calculateSingle();
+      const res = window.lastSingleCalc;
+      if (!res) return;
+
+      document.getElementById('promo-price').value = res.P.toFixed(2);
+      document.getElementById('promo-direct-cost').value = (res.cost + res.packaging).toFixed(2);
+      document.getElementById('promo-tax').value = res.taxPct.toFixed(1);
+      document.getElementById('promo-base-deduct').value = (res.adsPct + res.lossPct).toFixed(1);
+
+      calculatePromotions();
+      showToast("Dados do produto importados para o simulador de cupons!");
+    }
+
+    function updatePromoSlider(val, elementId, prefix = '') {
+      document.getElementById(elementId).innerText = `${prefix}${parseFloat(val).toFixed(1)}%`;
+    }
+
+    function calculatePromotions() {
+      const normalPrice = parseFloat(document.getElementById('promo-price').value) || 0;
+      const directCost = parseFloat(document.getElementById('promo-direct-cost').value) || 0;
+      const baseVolume = parseInt(document.getElementById('promo-base-volume').value) || 100;
+      const discPct = parseFloat(document.getElementById('promo-disc-pct').value) || 0;
+      const extraAdsPct = parseFloat(document.getElementById('promo-extra-ads').value) || 0;
+      const extraAffiliatePct = parseFloat(document.getElementById('promo-extra-affiliate')?.value) || 0;
+      const taxPct = parseFloat(document.getElementById('promo-tax').value) || 0;
+      const baseDeductPct = parseFloat(document.getElementById('promo-base-deduct').value) || 0;
+
+      const accountType = document.getElementById('p-account-type')?.value || 'CNPJ_NORMAL';
+
+      // Situação Normal Atual
+      const resNormal = evaluatePriceDetails(normalPrice, directCost, 0, taxPct, baseDeductPct, 0, accountType, true, 1);
+      const normalProfitUnit = resNormal.lucroLiquido;
+      const totalNormalProfitMonth = normalProfitUnit * baseVolume;
+
+      // Situação Promocional (com Ads Extra e Comissão de Afiliados)
+      const promoPrice = normalPrice * (1 - discPct / 100);
+      const totalVariablePct = taxPct + baseDeductPct + extraAdsPct + extraAffiliatePct;
+      const resPromo = evaluatePriceDetails(promoPrice, directCost, 0, totalVariablePct, 0, 0, accountType, true, 1);
+      const promoProfitUnit = resPromo.lucroLiquido;
+
+      // Elementos do DOM
+      const reqGrowthEl = document.getElementById('promo-required-growth');
+      const reqUnitsEl = document.getElementById('promo-required-units');
+      const newProfitEl = document.getElementById('promo-new-profit');
+      const newMarginEl = document.getElementById('promo-new-margin');
+      const badgeStatusEl = document.getElementById('promo-badge-status');
+      const analysisTextEl = document.getElementById('promo-analysis-text');
+
+      newProfitEl.innerText = formatBRL(promoProfitUnit);
+      newProfitEl.className = promoProfitUnit < 0 
+        ? "text-2xl sm:text-3xl font-extrabold text-rose-500 mt-0.5" 
+        : "text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-0.5";
+
+      newMarginEl.innerText = `Margem Real: ${resPromo.margemLiquida.toFixed(1)}%`;
+      newMarginEl.className = resPromo.margemLiquida < 0 ? "text-[11px] text-rose-400 font-bold" : "text-[11px] text-slate-300";
+
+      if (promoProfitUnit <= 0) {
+        reqGrowthEl.innerText = "INVIÁVEL";
+        reqGrowthEl.className = "text-2xl sm:text-3xl font-extrabold text-rose-500 mt-0.5";
+        reqUnitsEl.innerText = "Esta promoção resulta em prejuízo por venda!";
+        badgeStatusEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-rose-950 text-rose-300 border border-rose-500/30";
+        badgeStatusEl.innerText = "Risco Crítico / Prejuízo";
+        analysisTextEl.innerHTML = `<span class="text-rose-400 font-bold">Atenção!</span> Ao conceder ${discPct.toFixed(1)}% de desconto, investir mais ${extraAdsPct.toFixed(1)}% em Ads e ${extraAffiliatePct.toFixed(1)}% em Afiliados, cada unidade vendida gera <strong>${formatBRL(promoProfitUnit)}</strong> de prejuízo líquido. Ajuste o CMV ou reduza os incentivos para não queimar caixa.`;
+      } else {
+        const requiredVolume = totalNormalProfitMonth / promoProfitUnit;
+        const growthPct = ((requiredVolume - baseVolume) / baseVolume) * 100;
+
+        reqGrowthEl.innerText = `+${Math.max(0, growthPct).toFixed(0)}%`;
+        reqGrowthEl.className = growthPct < 30 ? "text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-0.5" : growthPct < 70 ? "text-2xl sm:text-3xl font-extrabold text-amber-400 mt-0.5" : "text-2xl sm:text-3xl font-extrabold text-rose-400 mt-0.5";
+        reqUnitsEl.innerText = `Você precisa vender ${Math.ceil(requiredVolume)} un/mês (vs. ${baseVolume} un atuais)`;
+
+        if (growthPct <= 25) {
+          badgeStatusEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/30";
+          badgeStatusEl.innerText = "Promoção Saudável & Segura";
+          analysisTextEl.innerHTML = `O aumento de volume necessário é de apenas <strong>+${growthPct.toFixed(0)}%</strong>. Ofertas Relâmpago e tráfego de Afiliados Shopee costumam aumentar as visitas em mais de 40%, indicando <strong>alto potencial de ganho financeiro total</strong>.`;
+        } else if (growthPct <= 65) {
+          badgeStatusEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-950 text-amber-300 border border-amber-500/30";
+          badgeStatusEl.innerText = "Atenção: Elasticidade Média";
+          analysisTextEl.innerHTML = `Para cobrir a margem menor com Ads e comissão de Afiliados, você precisa vender <strong>${Math.ceil(requiredVolume)} unidades</strong> (+${growthPct.toFixed(0)}%). Monitore o ROI nas primeiras horas.`;
+        } else {
+          badgeStatusEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-rose-950 text-rose-300 border border-rose-500/30";
+          badgeStatusEl.innerText = "Zona de Risco Alto";
+          analysisTextEl.innerHTML = `O desconto combinado com tráfego e afiliados corrói quase toda a margem. É necessário que as vendas cresçam <strong>+${growthPct.toFixed(0)}%</strong> apenas para empatar com seu lucro atual.`;
+        }
+      }
+
+      // Tabela de Cenários
+      const scenariosTbody = document.getElementById('promo-scenarios-tbody');
+      scenariosTbody.innerHTML = '';
+
+      const scenarios = [
+        { label: "Atual (Sem Promoção)", factor: 1.0, isCurrent: true },
+        { label: "Vendas Sobem +20%", factor: 1.2 },
+        { label: "Vendas Sobem +50%", factor: 1.5 },
+        { label: "Vendas Dobram (+100%)", factor: 2.0 }
+      ];
+
+      scenarios.forEach(sc => {
+        const units = Math.round(baseVolume * sc.factor);
+        const revenue = sc.isCurrent ? (normalPrice * units) : (promoPrice * units);
+        const profitTotal = sc.isCurrent ? (normalProfitUnit * units) : (promoProfitUnit * units);
+        const diff = profitTotal - totalNormalProfitMonth;
+
+        const isNegativeProfit = profitTotal < 0;
+        const tr = document.createElement('tr');
+        tr.className = sc.isCurrent ? "bg-slate-50 font-bold" : "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="p-2.5">${sc.label}</td>
+          <td class="p-2.5 font-medium">${units} un</td>
+          <td class="p-2.5">${formatBRL(revenue)}</td>
+          <td class="p-2.5 text-right font-extrabold ${isNegativeProfit ? 'text-rose-600 font-bold' : (profitTotal >= totalNormalProfitMonth ? 'text-emerald-600' : 'text-rose-600')}">
+            ${formatBRL(profitTotal)}
+          </td>
+          <td class="p-2.5 text-right text-[11px] font-bold ${diff >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+            ${diff === 0 ? '-' : (diff > 0 ? '+' : '') + formatBRL(diff)}
+          </td>
+        `;
+        scenariosTbody.appendChild(tr);
+      });
+    }
+
+    /* ==========================================================================
+       5. UTILITÁRIOS VISUAIS E DE NAVEGAÇÃO
+       ========================================================================== */
+    function switchTab(tab) {
+      currentTab = tab;
+      const tabs = ['single', 'combo', 'promo', 'batch', 'rules'];
+
+      tabs.forEach(t => {
+        const content = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`tab-${t}-btn`);
+        if (!content || !btn) return;
+
+        if (t === tab) {
+          content.classList.remove('hidden');
+          btn.className = "px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-xs flex items-center gap-1.5";
+        } else {
+          content.classList.add('hidden');
+          btn.className = "px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5";
+        }
+      });
+
+      if (tab === 'batch') renderBatchTable();
+      if (tab === 'combo') calculateCombos();
+      if (tab === 'promo') calculatePromotions();
+    }
+
+    function formatBRL(val) {
+      return (val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-msg');
+      text.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    // Inicialização da aplicação
+    window.addEventListener('DOMContentLoaded', () => {
+      calculateSingle();
+      renderBatchTable();
+      calculateCombos();
+      calculatePromotions();
+    });
+  </script>
+</body>
+</html>
