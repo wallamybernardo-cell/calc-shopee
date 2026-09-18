@@ -188,8 +188,10 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Perfil da Conta Shopee</label>
-              <select id="p-account-type" onchange="calculateSingle()" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white">
-                <option value="CNPJ_NORMAL">CNPJ / MEI / EPP (Padrão)</option>
+              <select id="p-account-type" onchange="handleAccountTypeChange()" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white">
+                <option value="CNPJ_SIMPLES">CNPJ / MEI / EPP (Simples)</option>
+                <option value="CNPJ_PRESUMIDO">CNPJ (Lucro Presumido)</option>
+                <option value="CNPJ_REAL">CNPJ (Lucro Real)</option>
                 <option value="CPF_NORMAL">CPF Normal (≤ 450 ped/90d)</option>
                 <option value="CPF_PENALIZADO">CPF Alavancado (> 450 ped/90d)</option>
               </select>
@@ -198,11 +200,18 @@
 
           <!-- Deduções Percentuais Variáveis -->
           <div class="border-t border-slate-100 pt-3">
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Deduções Fiscais e de Tráfego</span>
-            <div class="grid grid-cols-3 gap-2.5">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Deduções Fiscais, Tráfego & Gestão</span>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
               <div>
                 <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Impostos / DAS (%)</label>
                 <input type="number" step="0.1" min="0" id="p-tax" value="6.0" oninput="calculateSingle()" class="w-full text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 focus:ring-1 focus:ring-orange-500">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-0.5 flex items-center justify-between">
+                  <span>DIFAL Médio (%)</span>
+                  <span id="badge-difal" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">Isento</span>
+                </label>
+                <input type="number" step="0.1" min="0" id="p-difal" value="0.0" disabled oninput="calculateSingle()" class="w-full text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 focus:ring-1 focus:ring-orange-500 disabled:bg-slate-100 disabled:text-slate-400">
               </div>
               <div>
                 <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Shopee Ads / Mkt (%)</label>
@@ -212,7 +221,17 @@
                 <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Provisão Avarias (%)</label>
                 <input type="number" step="0.1" min="0" id="p-loss" value="1.5" oninput="calculateSingle()" class="w-full text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 focus:ring-1 focus:ring-orange-500">
               </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-orange-700 mb-0.5 flex items-center justify-between">
+                  <span>Gestão WB (%)</span>
+                  <span class="text-[9px] font-bold px-1 py-0.2 rounded bg-orange-100 text-orange-800">s/ Repasse</span>
+                </label>
+                <input type="number" step="0.1" min="0" id="p-gestao-wb" value="0.0" oninput="calculateSingle()" class="w-full text-xs font-bold text-orange-700 px-2.5 py-1.5 rounded-lg border border-orange-200 focus:ring-1 focus:ring-orange-500 bg-orange-50/50">
+              </div>
             </div>
+            <p id="difal-helper-text" class="text-[10px] text-slate-400 mt-1.5">
+              * DIFAL isento para optantes do Simples Nacional / MEI (STF ADI 5464) e CPF. Habilitado automaticamente no Lucro Presumido/Real.
+            </p>
           </div>
 
           <!-- Programa Devolução Fácil -->
@@ -365,6 +384,10 @@
                 <span>(-) Impostos & Tributos (<span id="dre-imposto-pct">0%</span>)</span>
                 <span id="dre-imposto">- R$ 0,00</span>
               </div>
+              <div id="dre-row-difal" class="hidden flex justify-between py-1 border-b border-slate-100 text-slate-600">
+                <span>(-) DIFAL Interestadual (<span id="dre-difal-pct">0.0%</span>)</span>
+                <span id="dre-difal">- R$ 0,00</span>
+              </div>
               <div class="flex justify-between py-1 border-b border-slate-100 text-slate-600">
                 <span>(-) Shopee Ads & Tráfego (<span id="dre-ads-pct">0%</span>)</span>
                 <span id="dre-ads">- R$ 0,00</span>
@@ -372,6 +395,10 @@
               <div class="flex justify-between py-1 border-b border-slate-100 text-slate-600">
                 <span>(-) Provisão de Avarias / Riscos (<span id="dre-avaria-pct">0%</span>)</span>
                 <span id="dre-avaria">- R$ 0,00</span>
+              </div>
+              <div id="dre-row-wb" class="hidden flex justify-between py-1 border-b border-slate-100 text-orange-700 font-semibold bg-orange-50/50 px-2 rounded">
+                <span>(-) Gestão & Performance WB Digital (<span id="dre-wb-pct">0.0%</span> s/ repasse)</span>
+                <span id="dre-wb">- R$ 0,00</span>
               </div>
               <div class="flex justify-between pt-2 text-sm font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200">
                 <span>(=) LUCRO LÍQUIDO NO BOLSO</span>
@@ -452,8 +479,10 @@
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Perfil da Conta</label>
-            <select id="combo-account-type" onchange="calculateCombos()" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-200 bg-white">
-              <option value="CNPJ_NORMAL">CNPJ / MEI (Padrão)</option>
+            <select id="combo-account-type" onchange="handleComboAccountTypeChange()" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-200 bg-white">
+              <option value="CNPJ_SIMPLES">CNPJ / MEI (Simples)</option>
+              <option value="CNPJ_PRESUMIDO">CNPJ (Lucro Presumido)</option>
+              <option value="CNPJ_REAL">CNPJ (Lucro Real)</option>
               <option value="CPF_NORMAL">CPF Normal</option>
               <option value="CPF_PENALIZADO">CPF Alavancado (>450 ped)</option>
             </select>
@@ -461,10 +490,17 @@
         </div>
 
         <!-- Alíquotas e Deduções Operacionais dos Kits -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50/70 p-3 rounded-xl border border-slate-200/60">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 bg-slate-50/70 p-3 rounded-xl border border-slate-200/60">
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1">Impostos DAS (%)</label>
             <input type="number" step="0.1" min="0" id="combo-tax" value="6.0" oninput="calculateCombos()" class="w-full text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1 flex items-center justify-between">
+              <span>DIFAL (%)</span>
+              <span id="combo-badge-difal" class="text-[9px] font-bold px-1 rounded bg-slate-200 text-slate-600">Isento</span>
+            </label>
+            <input type="number" step="0.1" min="0" id="combo-difal" value="0.0" disabled oninput="calculateCombos()" class="w-full text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white disabled:bg-slate-100 disabled:text-slate-400">
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1">Shopee Ads (%)</label>
@@ -473,6 +509,10 @@
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1">Avarias/Perdas (%)</label>
             <input type="number" step="0.1" min="0" id="combo-loss" value="1.5" oninput="calculateCombos()" class="w-full text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-orange-700 mb-1">Gestão WB (%)</label>
+            <input type="number" step="0.1" min="0" id="combo-gestao-wb" value="0.0" oninput="calculateCombos()" class="w-full text-xs font-bold text-orange-700 px-2.5 py-1.5 rounded-lg border border-orange-200 bg-orange-50/50">
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1">Devolução Fácil</label>
@@ -718,7 +758,9 @@
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1">Perfil da Conta</label>
             <select id="batch-account-type" onchange="calculateBatchAll()" class="w-full text-xs p-1.5 rounded-lg border border-slate-200 bg-white">
-              <option value="CNPJ_NORMAL">CNPJ / MEI</option>
+              <option value="CNPJ_SIMPLES">CNPJ / MEI (Simples)</option>
+              <option value="CNPJ_PRESUMIDO">CNPJ (Lucro Presumido)</option>
+              <option value="CNPJ_REAL">CNPJ (Lucro Real)</option>
               <option value="CPF_NORMAL">CPF Normal</option>
               <option value="CPF_PENALIZADO">CPF Alavancado</option>
             </select>
@@ -1014,6 +1056,10 @@
               <td class="p-2 text-slate-600">(-) Impostos / DAS</td>
               <td class="p-2 text-right text-slate-700" id="print-table-tax">- R$ 0,00</td>
             </tr>
+            <tr id="print-row-difal" class="hidden">
+              <td class="p-2 text-slate-600">(-) DIFAL Interestadual (<span id="print-table-difal-pct">0.0%</span>)</td>
+              <td class="p-2 text-right text-slate-700" id="print-table-difal">- R$ 0,00</td>
+            </tr>
             <tr>
               <td class="p-2 text-slate-600">(-) Shopee Ads / Marketing</td>
               <td class="p-2 text-right text-slate-700" id="print-table-ads">- R$ 0,00</td>
@@ -1021,6 +1067,10 @@
             <tr>
               <td class="p-2 text-slate-600">(-) Provisão de Avarias / Perdas</td>
               <td class="p-2 text-right text-slate-700" id="print-table-loss">- R$ 0,00</td>
+            </tr>
+            <tr id="print-row-wb" class="hidden bg-orange-50/50">
+              <td class="p-2 font-semibold text-orange-800">(-) Gestão & Performance WB Digital (<span id="print-table-wb-pct">0.0%</span> s/ repasse)</td>
+              <td class="p-2 text-right font-bold text-orange-800" id="print-table-wb">- R$ 0,00</td>
             </tr>
             <tr class="bg-emerald-50 font-bold text-emerald-900 border-t-2 border-emerald-400">
               <td class="p-3 text-sm">(=) Lucro Líquido Real por Unidade</td>
@@ -1150,9 +1200,11 @@
       custoProduto,
       embalagem = 0,
       aliquotaImposto = 0,
+      aliquotaDifal = 0,
       aliquotaAds = 0,
       aliquotaAvarias = 0,
-      tipoConta = 'CNPJ_NORMAL',
+      aliquotaGestaoWb = 0,
+      tipoConta = 'CNPJ_SIMPLES',
       devolucaoFacilAtiva = false,
       itensPorPedido = 1,
       quantidadeItens = 1
@@ -1161,8 +1213,10 @@
       const cost = parseFloat(custoProduto) || 0;
       const pkg = parseFloat(embalagem) || 0;
       const tax = parseFloat(aliquotaImposto) || 0;
+      const difal = parseFloat(aliquotaDifal) || 0;
       const ads = parseFloat(aliquotaAds) || 0;
       const loss = parseFloat(aliquotaAvarias) || 0;
+      const wb = parseFloat(aliquotaGestaoWb) || 0;
       const qty = Math.max(1, parseInt(quantidadeItens) || 1);
       const itemsOrder = Math.max(1, parseInt(itensPorPedido) || 1);
 
@@ -1174,17 +1228,22 @@
       const totalTaxaShopee = valComissao + valFixa + valDevFacil;
       const repasseShopee = P - totalTaxaShopee;
 
-      // Deduções percentuais operacionais
+      // Comissão de Gestão WB Digital: incide diretamente sobre o Repasse Líquido Estimado da Shopee
+      const valGestaoWb = repasseShopee > 0 ? (repasseShopee * (wb / 100)) : 0;
+      const repasseAposWb = repasseShopee - valGestaoWb;
+
+      // Deduções percentuais operacionais sobre o Preço de Venda Bruto
       const valImposto = P * (tax / 100);
+      const valDifal = P * (difal / 100);
       const valAds = P * (ads / 100);
       const valAvaria = P * (loss / 100);
-      const totalDeducoesVariaveis = valImposto + valAds + valAvaria;
+      const totalDeducoesVariaveis = valImposto + valDifal + valAds + valAvaria;
 
       // Custos diretos
       const totalCustosDiretos = cost + pkg;
 
-      // Lucro líquido real
-      const lucroLiquido = repasseShopee - (totalDeducoesVariaveis + totalCustosDiretos);
+      // Lucro líquido real no bolso
+      const lucroLiquido = (repasseShopee - valGestaoWb) - (totalDeducoesVariaveis + totalCustosDiretos);
       const margemLiquida = P > 0 ? (lucroLiquido / P) * 100 : 0;
       const lucroPorPeca = lucroLiquido / qty;
 
@@ -1196,7 +1255,12 @@
         valDevFacil,
         totalTaxaShopee,
         repasseShopee,
+        valGestaoWb,
+        aliquotaGestaoWb: wb,
+        repasseAposWb,
         valImposto,
+        valDifal,
+        aliquotaDifal: difal,
         valAds,
         valAvaria,
         totalDeducoesVariaveis,
@@ -1214,11 +1278,12 @@
 
     /**
      * Calcula o preço ideal (P) a partir de uma margem alvo desejada.
-     * Utiliza teste analítico pelas faixas tarifárias da Shopee.
+     * Utiliza teste analítico pelas faixas tarifárias da Shopee considerando DIFAL e WB Digital.
      */
-    function solveIdealPrice(cost, packaging, taxPct, adsPct, lossPct, targetMarginPct, accountType, devFacilPerItem) {
-      const fixedCosts = cost + packaging + devFacilPerItem;
-      const variableDeductions = (taxPct + adsPct + lossPct + targetMarginPct) / 100;
+    function solveIdealPrice(cost, packaging, taxPct, difalPct, adsPct, lossPct, targetMarginPct, gestaoWbPct, accountType, devFacilPerItem) {
+      const wbRate = (gestaoWbPct || 0) / 100;
+      const fixedCosts = cost + packaging;
+      const variableDeductions = (taxPct + difalPct + adsPct + lossPct + targetMarginPct) / 100;
 
       // Definição das faixas a testar: [min, max, comissaoPct, fixaBase]
       const isCpfPenalizado = (accountType === 'CPF_PENALIZADO');
@@ -1236,14 +1301,16 @@
         let P_cand = 0;
 
         if (b.isSub8) {
-          // Na faixa < 8: Taxa fixa = P/2 (ou seja, 50% de dedução adicional)
-          const totalRate = variableDeductions + b.pct + 0.50;
-          if (totalRate >= 1) continue;
-          P_cand = fixedCosts / (1 - totalRate);
+          // Na faixa < 8: Taxa fixa = 0.5 * P
+          const denom = (0.5 - b.pct) * (1 - wbRate) - variableDeductions;
+          if (denom <= 0.01) continue;
+          const numer = fixedCosts + devFacilPerItem * (1 - wbRate);
+          P_cand = numer / denom;
         } else {
-          const totalRate = variableDeductions + b.pct;
-          if (totalRate >= 1) continue;
-          P_cand = (fixedCosts + b.fixed) / (1 - totalRate);
+          const denom = (1 - b.pct) * (1 - wbRate) - variableDeductions;
+          if (denom <= 0.01) continue;
+          const numer = fixedCosts + (b.fixed + devFacilPerItem) * (1 - wbRate);
+          P_cand = numer / denom;
         }
 
         if (P_cand >= b.min && P_cand <= b.max) {
@@ -1251,13 +1318,13 @@
         }
       }
 
-      // Se cair exatamente na fronteira ou divergência de descontinuidade, refinamento iterativo
+      // Refinamento iterativo em fronteiras ou descontinuidades
       let pIter = Math.max(fixedCosts * 1.5, 10.0);
-      for (let i = 0; i < 25; i++) {
+      for (let i = 0; i < 30; i++) {
         const info = getShopeeBracket(pIter, accountType);
-        const denom = 1 - (variableDeductions + info.pct);
-        if (denom <= 0.05) break;
-        const pNext = (fixedCosts + info.fixed) / denom;
+        const denom = (1 - info.pct) * (1 - wbRate) - variableDeductions;
+        if (denom <= 0.02) break;
+        const pNext = (fixedCosts + (info.fixed + devFacilPerItem) * (1 - wbRate)) / denom;
         if (Math.abs(pNext - pIter) < 0.01) break;
         pIter = pNext;
       }
@@ -1268,50 +1335,77 @@
     /**
      * Calcula todos os custos, repasse e lucro dado um preço de venda P
      */
-    function evaluatePriceDetails(P, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder) {
+    function evaluatePriceDetails(P, cost, packaging, taxPct, difalPct, adsPct, lossPct, gestaoWbPct, accountType, devFacilActive, itemsPerOrder) {
+      const numP = Math.max(0, parseFloat(P) || 0);
+      const numCost = parseFloat(cost) || 0;
+      const numPackaging = parseFloat(packaging) || 0;
+      const numTaxPct = parseFloat(taxPct) || 0;
+      const numDifalPct = parseFloat(difalPct) || 0;
+      const numAdsPct = parseFloat(adsPct) || 0;
+      const numLossPct = parseFloat(lossPct) || 0;
+      const numGestaoWbPct = typeof gestaoWbPct === 'number' ? gestaoWbPct : (parseFloat(gestaoWbPct) || 0);
+      const strAccountType = typeof accountType === 'string' ? accountType : 'CNPJ_SIMPLES';
+      const boolDevFacil = Boolean(devFacilActive);
+      const numItemsPerOrder = Math.max(1, parseInt(itemsPerOrder) || 1);
+
       const calc = calcularLucroShopee({
-        precoVenda: P,
-        custoProduto: cost,
-        embalagem: packaging,
-        aliquotaImposto: taxPct,
-        aliquotaAds: adsPct,
-        aliquotaAvarias: lossPct,
-        tipoConta: accountType,
-        devolucaoFacilAtiva: devFacilActive,
-        itensPorPedido: itemsPerOrder,
+        precoVenda: numP,
+        custoProduto: numCost,
+        embalagem: numPackaging,
+        aliquotaImposto: numTaxPct,
+        aliquotaDifal: numDifalPct,
+        aliquotaAds: numAdsPct,
+        aliquotaAvarias: numLossPct,
+        aliquotaGestaoWb: numGestaoWbPct,
+        tipoConta: strAccountType,
+        devolucaoFacilAtiva: boolDevFacil,
+        itensPorPedido: numItemsPerOrder,
         quantidadeItens: 1
       });
 
       const devFacilPerItem = calc.valDevFacil;
 
       // Ponto de equilíbrio (Breakeven onde lucro = 0)
-      const breakeven = solveIdealPrice(cost, packaging, taxPct, adsPct, lossPct, 0, accountType, devFacilPerItem);
+      const breakeven = solveIdealPrice(numCost, numPackaging, numTaxPct, numDifalPct, numAdsPct, numLossPct, 0, numGestaoWbPct, strAccountType, devFacilPerItem);
 
       // Compilar notas de transparência
       const obsList = [...calc.notes];
-      if (devFacilActive) {
-        obsList.push("Devolução Fácil ativa: R$ 0,49/pedido diluído em " + itemsPerOrder + " un = R$ " + devFacilPerItem.toFixed(2) + "/item");
+      if (numDifalPct > 0) {
+        obsList.push("DIFAL: " + numDifalPct.toFixed(1) + "% (" + formatBRL(calc.valDifal) + ")");
+      } else {
+        obsList.push("DIFAL: Isento (Simples Nacional / CPF)");
+      }
+      if (numGestaoWbPct > 0) {
+        obsList.push("Gestão WB Digital: " + numGestaoWbPct.toFixed(1) + "% s/ repasse (" + formatBRL(calc.valGestaoWb) + ")");
+      }
+      if (boolDevFacil) {
+        obsList.push("Devolução Fácil: R$ 0,49/pedido diluído em " + numItemsPerOrder + " un = R$ " + devFacilPerItem.toFixed(2) + "/item");
       } else {
         obsList.push("Devolução Fácil inativa (R$ 0,00)");
       }
       if (calc.isPixEligible) {
-        obsList.push("Subsídio PIX Shopee: Comprador paga R$ " + calc.precoPix.toFixed(2) + " (-5% bancado pela Shopee sem descontar do seu repasse)");
+        obsList.push("Subsídio PIX Shopee: Comprador paga R$ " + calc.precoPix.toFixed(2) + " (-5% bancado pela Shopee)");
       }
 
       return {
         P: calc.P,
-        cost,
-        packaging,
-        taxPct,
-        adsPct,
-        lossPct,
+        cost: numCost,
+        packaging: numPackaging,
+        taxPct: numTaxPct,
+        difalPct: numDifalPct,
+        adsPct: numAdsPct,
+        lossPct: numLossPct,
+        gestaoWbPct: numGestaoWbPct,
         shopeePct: calc.shopeePct,
         valComissao: calc.valComissao,
         valFixa: calc.valFixa,
         valDevFacil: calc.valDevFacil,
         totalTaxaShopee: calc.totalTaxaShopee,
         repasseShopee: calc.repasseShopee,
+        valGestaoWb: calc.valGestaoWb,
+        repasseAposWb: calc.repasseAposWb,
         valImposto: calc.valImposto,
+        valDifal: calc.valDifal,
         valAds: calc.valAds,
         valAvaria: calc.valAvaria,
         lucroLiquido: calc.lucroLiquido,
@@ -1326,6 +1420,55 @@
     /* ==========================================================================
        3. CONTROLE DA CALCULADORA INDIVIDUAL
        ========================================================================== */
+    function handleAccountTypeChange() {
+      const accountType = document.getElementById('p-account-type').value;
+      const difalInput = document.getElementById('p-difal');
+      const difalBadge = document.getElementById('badge-difal');
+      const difalHelper = document.getElementById('difal-helper-text');
+
+      if (accountType === 'CNPJ_PRESUMIDO' || accountType === 'CNPJ_REAL') {
+        difalInput.disabled = false;
+        if (parseFloat(difalInput.value) === 0 || !difalInput.value) {
+          difalInput.value = "7.5";
+        }
+        difalBadge.innerText = "Ativo (Média 7.5%)";
+        difalBadge.className = "text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-200";
+        if (difalHelper) {
+          difalHelper.innerHTML = "* <strong>Regime Normal (" + (accountType === 'CNPJ_PRESUMIDO' ? 'Lucro Presumido' : 'Lucro Real') + ")</strong>: DIFAL ativo na venda para consumidor final não contribuinte (Média de 7,5% para saídas de AL). Ajustável livremente.";
+        }
+      } else {
+        difalInput.disabled = true;
+        difalInput.value = "0.0";
+        difalBadge.innerText = "Isento";
+        difalBadge.className = "text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-500";
+        if (difalHelper) {
+          difalHelper.innerHTML = "* DIFAL isento para optantes do Simples Nacional / MEI (STF ADI 5464) e vendas no CPF.";
+        }
+      }
+      calculateSingle();
+    }
+
+    function handleComboAccountTypeChange() {
+      const acc = document.getElementById('combo-account-type').value;
+      const difalInput = document.getElementById('combo-difal');
+      const difalBadge = document.getElementById('combo-badge-difal');
+
+      if (acc === 'CNPJ_PRESUMIDO' || acc === 'CNPJ_REAL') {
+        difalInput.disabled = false;
+        if (parseFloat(difalInput.value) === 0 || !difalInput.value) {
+          difalInput.value = "7.5";
+        }
+        difalBadge.innerText = "Ativo (7.5%)";
+        difalBadge.className = "text-[9px] font-bold px-1 rounded bg-amber-100 text-amber-800";
+      } else {
+        difalInput.disabled = true;
+        difalInput.value = "0.0";
+        difalBadge.innerText = "Isento";
+        difalBadge.className = "text-[9px] font-bold px-1 rounded bg-slate-200 text-slate-600";
+      }
+      calculateCombos();
+    }
+
     function setCalcMode(mode) {
       singleCalcMode = mode;
       const btnTarget = document.getElementById('btn-mode-target');
@@ -1354,8 +1497,10 @@
       const fixedPrice = parseFloat(document.getElementById('p-fixed-price').value) || 0;
       const accountType = document.getElementById('p-account-type').value;
       const taxPct = parseFloat(document.getElementById('p-tax').value) || 0;
+      const difalPct = parseFloat(document.getElementById('p-difal').value) || 0;
       const adsPct = parseFloat(document.getElementById('p-ads').value) || 0;
       const lossPct = parseFloat(document.getElementById('p-loss').value) || 0;
+      const gestaoWbPct = parseFloat(document.getElementById('p-gestao-wb').value) || 0;
       const devFacilActive = document.getElementById('p-dev-facil').checked;
       const itemsPerOrder = parseInt(document.getElementById('p-items-per-order').value) || 1;
 
@@ -1363,12 +1508,12 @@
 
       let finalP = 0;
       if (singleCalcMode === 'target') {
-        finalP = solveIdealPrice(cost, packaging, taxPct, adsPct, lossPct, targetMargin, accountType, devFacilPerItem);
+        finalP = solveIdealPrice(cost, packaging, taxPct, difalPct, adsPct, lossPct, targetMargin, gestaoWbPct, accountType, devFacilPerItem);
       } else {
         finalP = fixedPrice;
       }
 
-      const res = evaluatePriceDetails(finalP, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
+      const res = evaluatePriceDetails(finalP, cost, packaging, taxPct, difalPct, adsPct, lossPct, gestaoWbPct, accountType, devFacilActive, itemsPerOrder);
 
       // Atualizar Cards Principais
       document.getElementById('res-price').innerText = formatBRL(res.P);
@@ -1394,7 +1539,7 @@
       const alertZone = document.getElementById('alert-zone-80');
       if (res.P >= 79.50 && res.P <= 92.50) {
         alertZone.classList.remove('hidden');
-        renderGargaloAnalysis(res.P, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
+        renderGargaloAnalysis(res.P, cost, packaging, taxPct, difalPct, adsPct, lossPct, gestaoWbPct, accountType, devFacilActive, itemsPerOrder);
       } else {
         alertZone.classList.add('hidden');
       }
@@ -1418,10 +1563,31 @@
       document.getElementById('dre-embalagem').innerText = `- ${formatBRL(res.packaging)}`;
       document.getElementById('dre-imposto-pct').innerText = `${taxPct.toFixed(1)}%`;
       document.getElementById('dre-imposto').innerText = `- ${formatBRL(res.valImposto)}`;
+
+      // Linha do DIFAL na DRE
+      const difalRow = document.getElementById('dre-row-difal');
+      if (res.valDifal > 0) {
+        difalRow.classList.remove('hidden');
+        document.getElementById('dre-difal-pct').innerText = `${res.difalPct.toFixed(1)}%`;
+        document.getElementById('dre-difal').innerText = `- ${formatBRL(res.valDifal)}`;
+      } else {
+        difalRow.classList.add('hidden');
+      }
+
       document.getElementById('dre-ads-pct').innerText = `${adsPct.toFixed(1)}%`;
       document.getElementById('dre-ads').innerText = `- ${formatBRL(res.valAds)}`;
       document.getElementById('dre-avaria-pct').innerText = `${lossPct.toFixed(1)}%`;
       document.getElementById('dre-avaria').innerText = `- ${formatBRL(res.valAvaria)}`;
+
+      // Linha de Gestão WB Digital na DRE
+      const wbRow = document.getElementById('dre-row-wb');
+      if (res.valGestaoWb > 0) {
+        wbRow.classList.remove('hidden');
+        document.getElementById('dre-wb-pct').innerText = `${res.gestaoWbPct.toFixed(1)}%`;
+        document.getElementById('dre-wb').innerText = `- ${formatBRL(res.valGestaoWb)}`;
+      } else {
+        wbRow.classList.add('hidden');
+      }
       
       const dreLucroEl = document.getElementById('dre-lucro');
       dreLucroEl.innerText = `${formatBRL(res.lucroLiquido)} (${res.margemLiquida.toFixed(1)}%)`;
@@ -1432,7 +1598,7 @@
         dreLucroRow.className = "flex justify-between pt-2 text-sm font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200";
       }
 
-      // Observações de Taxas (com verificação segura de existência)
+      // Observações de Taxas
       const obsBox = document.getElementById('res-obs-box');
       if (obsBox) {
         obsBox.innerText = res.obs;
@@ -1444,12 +1610,11 @@
 
     /**
      * OTIMIZADOR DE GARGALOS INVISÍVEIS:
-     * Calcula a curva de lucro entre R$ 75 e R$ 95 e renderiza no card
+     * Calcula a curva de lucro entre R$ 75 e R$ 95 considerando DIFAL e WB Digital
      */
-    function renderGargaloAnalysis(currentP, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder) {
-      // Comparar lucro de R$ 79,90 vs Preço Atual
-      const res7990 = evaluatePriceDetails(79.90, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
-      const resCurrent = evaluatePriceDetails(currentP, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
+    function renderGargaloAnalysis(currentP, cost, packaging, taxPct, difalPct, adsPct, lossPct, gestaoWbPct, accountType, devFacilActive, itemsPerOrder) {
+      const res7990 = evaluatePriceDetails(79.90, cost, packaging, taxPct, difalPct, adsPct, lossPct, gestaoWbPct, accountType, devFacilActive, itemsPerOrder);
+      const resCurrent = evaluatePriceDetails(currentP, cost, packaging, taxPct, difalPct, adsPct, lossPct, gestaoWbPct, accountType, devFacilActive, itemsPerOrder);
       const diffLucro = res7990.lucroLiquido - resCurrent.lucroLiquido;
 
       const alertText = document.getElementById('alert-zone-80-text');
@@ -1468,7 +1633,7 @@
       let foundIndifference = false;
 
       curvePrices.forEach(pTest => {
-        const rTest = evaluatePriceDetails(pTest, cost, packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
+        const rTest = evaluatePriceDetails(pTest, cost, packaging, taxPct, difalPct, adsPct, lossPct, gestaoWbPct, accountType, devFacilActive, itemsPerOrder);
         const isCurrent = Math.abs(pTest - currentP) < 0.6;
         const isPeak = (pTest === 79.90);
         const isValley = (pTest === 80.50);
@@ -1490,7 +1655,7 @@
           <div class="text-[10px] font-bold ${isPeak ? 'text-emerald-800' : isValley ? 'text-rose-800' : 'text-slate-600'}">
             ${isPeak ? '★ PICO MÁXIMO' : isValley ? '▼ POÇO DE TAXAS' : formatBRL(pTest)}
           </div>
-          <div class="text-xs font-extrabold mt-1 ${rTest.lucroLiquido >= res7990.lucroLiquido ? 'text-emerald-700' : 'text-slate-800'}">
+          <div class="text-xs font-extrabold mt-1 ${rTest.lucroLiquido < 0 ? 'text-rose-600' : (rTest.lucroLiquido >= res7990.lucroLiquido ? 'text-emerald-700' : 'text-slate-800')}">
             ${formatBRL(rTest.lucroLiquido)}
           </div>
           <div class="text-[10px] text-slate-400 mt-0.5">${rTest.margemLiquida.toFixed(1)}% margem</div>
@@ -1535,13 +1700,15 @@
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      const accountType = document.getElementById('batch-account-type')?.value || 'CNPJ_NORMAL';
+      const accountType = document.getElementById('batch-account-type')?.value || 'CNPJ_SIMPLES';
       const taxPct = parseFloat(document.getElementById('batch-tax')?.value) || 0;
       const adsPct = parseFloat(document.getElementById('batch-ads')?.value) || 0;
       const lossPct = parseFloat(document.getElementById('batch-loss')?.value) || 0;
       const devFacilActive = (document.getElementById('batch-dev-facil')?.value === 'SIM');
       const itemsPerOrder = parseInt(document.getElementById('batch-items-order')?.value) || 1;
       const devFacilPerItem = devFacilActive ? (0.49 / itemsPerOrder) : 0;
+      const difalPct = (accountType === 'CNPJ_PRESUMIDO' || accountType === 'CNPJ_REAL') ? 7.5 : 0.0;
+      const gestaoWbPct = parseFloat(document.getElementById('p-gestao-wb')?.value) || 0.0;
 
       let sumRevenue = 0;
       let sumRepasse = 0;
@@ -1552,9 +1719,11 @@
           item.cost,
           item.packaging,
           taxPct,
+          difalPct,
           adsPct,
           lossPct,
           item.targetMargin,
+          gestaoWbPct,
           accountType,
           devFacilPerItem
         );
@@ -1564,8 +1733,10 @@
           item.cost,
           item.packaging,
           taxPct,
+          difalPct,
           adsPct,
           lossPct,
+          gestaoWbPct,
           accountType,
           devFacilActive,
           itemsPerOrder
@@ -1751,19 +1922,21 @@
         return;
       }
 
-      const accountType = document.getElementById('batch-account-type')?.value || 'CNPJ_NORMAL';
+      const accountType = document.getElementById('batch-account-type')?.value || 'CNPJ_SIMPLES';
       const taxPct = parseFloat(document.getElementById('batch-tax')?.value) || 0;
       const adsPct = parseFloat(document.getElementById('batch-ads')?.value) || 0;
       const lossPct = parseFloat(document.getElementById('batch-loss')?.value) || 0;
       const devFacilActive = (document.getElementById('batch-dev-facil')?.value === 'SIM');
       const itemsPerOrder = parseInt(document.getElementById('batch-items-order')?.value) || 1;
       const devFacilPerItem = devFacilActive ? (0.49 / itemsPerOrder) : 0;
+      const difalPct = (accountType === 'CNPJ_PRESUMIDO' || accountType === 'CNPJ_REAL') ? 7.5 : 0.0;
+      const gestaoWbPct = parseFloat(document.getElementById('p-gestao-wb')?.value) || 0.0;
 
       let csvContent = "Nome;SKU;CMV_R$;Embalagem_R$;Margem_Alvo_Pct;Preco_Venda_R$;Repasse_Shopee_R$;Lucro_Liquido_R$;Margem_Real_Pct;Taxa_Comissao_Pct;Taxa_Fixa_R$\n";
 
       batchProducts.forEach(item => {
-        const idealPrice = solveIdealPrice(item.cost, item.packaging, taxPct, adsPct, lossPct, item.targetMargin, accountType, devFacilPerItem);
-        const res = evaluatePriceDetails(idealPrice, item.cost, item.packaging, taxPct, adsPct, lossPct, accountType, devFacilActive, itemsPerOrder);
+        const idealPrice = solveIdealPrice(item.cost, item.packaging, taxPct, difalPct, adsPct, lossPct, item.targetMargin, gestaoWbPct, accountType, devFacilPerItem);
+        const res = evaluatePriceDetails(idealPrice, item.cost, item.packaging, taxPct, difalPct, adsPct, lossPct, gestaoWbPct, accountType, devFacilActive, itemsPerOrder);
 
         csvContent += `"${item.name}";"${item.sku}";${item.cost.toFixed(2)};${item.packaging.toFixed(2)};${item.targetMargin.toFixed(1)};${res.P.toFixed(2)};${res.repasseShopee.toFixed(2)};${res.lucroLiquido.toFixed(2)};${res.margemLiquida.toFixed(1)};${(res.shopeePct * 100).toFixed(0)};${res.valFixa.toFixed(2)}\n`;
       });
@@ -1790,11 +1963,13 @@
 
       const titleVal = document.getElementById('p-title')?.value || 'Produto Não Identificado';
       const skuVal = document.getElementById('p-sku')?.value || 'SEM-SKU';
-      const accountVal = document.getElementById('p-account-type')?.value || 'CNPJ_NORMAL';
+      const accountVal = document.getElementById('p-account-type')?.value || 'CNPJ_SIMPLES';
       const devVal = document.getElementById('p-dev-facil')?.checked ? 'Ativo (R$ 0,49)' : 'Inativo';
 
       const accountLabels = {
-        'CNPJ_NORMAL': 'CNPJ / MEI (Padrão)',
+        'CNPJ_SIMPLES': 'CNPJ / MEI / EPP (Simples)',
+        'CNPJ_PRESUMIDO': 'CNPJ (Lucro Presumido)',
+        'CNPJ_REAL': 'CNPJ (Lucro Real)',
         'CPF_NORMAL': 'CPF Normal (≤ 450 ped)',
         'CPF_PENALIZADO': 'CPF Alavancado (> 450 ped)'
       };
@@ -1816,8 +1991,27 @@
       document.getElementById('print-table-cmv').innerText = `- ${formatBRL(res.cost)}`;
       document.getElementById('print-table-emb').innerText = `- ${formatBRL(res.packaging)}`;
       document.getElementById('print-table-tax').innerText = `- ${formatBRL(res.valImposto)} (${res.taxPct.toFixed(1)}%)`;
+
+      const printDifalRow = document.getElementById('print-row-difal');
+      if (res.valDifal > 0) {
+        printDifalRow.classList.remove('hidden');
+        document.getElementById('print-table-difal-pct').innerText = `${res.difalPct.toFixed(1)}%`;
+        document.getElementById('print-table-difal').innerText = `- ${formatBRL(res.valDifal)}`;
+      } else {
+        printDifalRow.classList.add('hidden');
+      }
+
       document.getElementById('print-table-ads').innerText = `- ${formatBRL(res.valAds)} (${res.adsPct.toFixed(1)}%)`;
       document.getElementById('print-table-loss').innerText = `- ${formatBRL(res.valAvaria)} (${res.lossPct.toFixed(1)}%)`;
+
+      const printWbRow = document.getElementById('print-row-wb');
+      if (res.valGestaoWb > 0) {
+        printWbRow.classList.remove('hidden');
+        document.getElementById('print-table-wb-pct').innerText = `${res.gestaoWbPct.toFixed(1)}%`;
+        document.getElementById('print-table-wb').innerText = `- ${formatBRL(res.valGestaoWb)}`;
+      } else {
+        printWbRow.classList.add('hidden');
+      }
       
       const printProfitEl = document.getElementById('print-table-profit');
       printProfitEl.innerText = formatBRL(res.lucroLiquido);
@@ -1851,11 +2045,14 @@
       const titleVal = document.getElementById('p-title')?.value || 'Produto';
       const skuVal = document.getElementById('p-sku')?.value || 'N/A';
 
+      const difalLine = res.valDifal > 0 ? `\n⚖️ *DIFAL (${res.difalPct.toFixed(1)}%):* - ${formatBRL(res.valDifal)}` : '';
+      const wbLine = res.valGestaoWb > 0 ? `\n🚀 *Gestão WB Digital (${res.gestaoWbPct.toFixed(1)}% s/ repasse):* - ${formatBRL(res.valGestaoWb)}` : '';
+
       const summary = `*Composição de Preço Shopee - Agência WB Digital*
 📦 *Produto:* ${titleVal} (SKU: ${skuVal})
 💰 *Preço Recomendado:* ${formatBRL(res.P)}
 ⚡ *Preço no PIX Shopee:* ${res.isPixEligible ? formatBRL(res.precoPix) + ' (-5% subsidiado)' : 'Sem desconto'}
-💳 *Repasse Líquido Shopee:* ${formatBRL(res.repasseShopee)}
+💳 *Repasse Líquido Shopee:* ${formatBRL(res.repasseShopee)}${wbLine}${difalLine}
 💵 *Lucro Líquido Real:* ${formatBRL(res.lucroLiquido)} (${res.margemLiquida.toFixed(1)}% de margem)
 ⚖️ *Ponto de Equilíbrio:* ${formatBRL(res.breakeven)}
 
@@ -1882,10 +2079,12 @@
       const cost = parseFloat(document.getElementById('p-cost')?.value) || 28.50;
       const pkg = parseFloat(document.getElementById('p-packaging')?.value) || 2.00;
       const singlePrice = window.lastSingleCalc ? window.lastSingleCalc.P : 69.90;
-      const accountType = document.getElementById('p-account-type')?.value || 'CNPJ_NORMAL';
+      const accountType = document.getElementById('p-account-type')?.value || 'CNPJ_SIMPLES';
       const taxPct = parseFloat(document.getElementById('p-tax')?.value) || 0;
+      const difalPct = parseFloat(document.getElementById('p-difal')?.value) || 0;
       const adsPct = parseFloat(document.getElementById('p-ads')?.value) || 0;
       const lossPct = parseFloat(document.getElementById('p-loss')?.value) || 0;
+      const gestaoWbPct = parseFloat(document.getElementById('p-gestao-wb')?.value) || 0;
       const devFacilActive = document.getElementById('p-dev-facil')?.checked;
 
       const cCost = document.getElementById('combo-cost');
@@ -1902,14 +2101,18 @@
       if (cAcc) cAcc.value = accountType;
       const cTax = document.getElementById('combo-tax');
       if (cTax) cTax.value = taxPct.toFixed(1);
+      const cDifal = document.getElementById('combo-difal');
+      if (cDifal) cDifal.value = difalPct.toFixed(1);
       const cAds = document.getElementById('combo-ads');
       if (cAds) cAds.value = adsPct.toFixed(1);
       const cLoss = document.getElementById('combo-loss');
       if (cLoss) cLoss.value = lossPct.toFixed(1);
+      const cWb = document.getElementById('combo-gestao-wb');
+      if (cWb) cWb.value = gestaoWbPct.toFixed(1);
       const cDev = document.getElementById('combo-dev-facil');
       if (cDev) cDev.value = devFacilActive ? 'SIM' : 'NAO';
 
-      calculateCombos();
+      handleComboAccountTypeChange();
       showToast("Dados do simulador individual sincronizados com 100% de fidelidade!");
     }
 
@@ -1921,21 +2124,25 @@
       const pkg3 = parseFloat(document.getElementById('combo-pkg-3')?.value) || 0;
       const disc2Pct = parseFloat(document.getElementById('combo-disc-2')?.value) || 0;
       const disc3Pct = parseFloat(document.getElementById('combo-disc-3')?.value) || 0;
-      const accountType = document.getElementById('combo-account-type')?.value || 'CNPJ_NORMAL';
+      const accountType = document.getElementById('combo-account-type')?.value || 'CNPJ_SIMPLES';
 
       const taxPct = parseFloat(document.getElementById('combo-tax')?.value) || 0;
+      const difalPct = parseFloat(document.getElementById('combo-difal')?.value) || 0;
       const adsPct = parseFloat(document.getElementById('combo-ads')?.value) || 0;
       const lossPct = parseFloat(document.getElementById('combo-loss')?.value) || 0;
+      const gestaoWbPct = parseFloat(document.getElementById('combo-gestao-wb')?.value) || 0;
       const devFacilActive = (document.getElementById('combo-dev-facil')?.value === 'SIM');
 
-      // 1. Unidade Individual (Usa calcularLucroShopee padronizado)
+      // 1. Unidade Individual
       const res1 = calcularLucroShopee({
         precoVenda: priceUnit,
         custoProduto: costUnit,
         embalagem: pkg1,
         aliquotaImposto: taxPct,
+        aliquotaDifal: difalPct,
         aliquotaAds: adsPct,
         aliquotaAvarias: lossPct,
+        aliquotaGestaoWb: gestaoWbPct,
         tipoConta: accountType,
         devolucaoFacilAtiva: devFacilActive,
         itensPorPedido: 1,
@@ -1950,8 +2157,10 @@
         custoProduto: costUnit * 2,
         embalagem: pkg2,
         aliquotaImposto: taxPct,
+        aliquotaDifal: difalPct,
         aliquotaAds: adsPct,
         aliquotaAvarias: lossPct,
+        aliquotaGestaoWb: gestaoWbPct,
         tipoConta: accountType,
         devolucaoFacilAtiva: devFacilActive,
         itensPorPedido: 1,
@@ -1961,11 +2170,13 @@
       const packagingSavings2 = (pkg1 * 2) - pkg2;
       const feeSavings2 = (res1.valFixa * 2) - res2.valFixa;
 
-      // Desconto máximo seguro no Kit 2 para empatar com 2x o lucro da unidade:
+      // Desconto máximo seguro no Kit 2
       const targetProfit2 = 2 * res1.lucroLiquido;
-      const totalVarRate2 = (taxPct + adsPct + lossPct + (res2.shopeePct * 100)) / 100;
-      const fixedCostsKit2 = (costUnit * 2) + pkg2 + res2.valFixa + (devFacilActive ? 0.49 : 0);
-      const minPriceKit2 = totalVarRate2 < 1 ? (fixedCostsKit2 + targetProfit2) / (1 - totalVarRate2) : rawPrice2;
+      const wbRate = gestaoWbPct / 100;
+      const totalVarRate2 = ((taxPct + difalPct + adsPct + lossPct) / 100);
+      const denom2 = (1 - res2.shopeePct) * (1 - wbRate) - totalVarRate2;
+      const fixedCostsKit2 = (costUnit * 2) + pkg2 + (res2.valFixa + (devFacilActive ? 0.49 : 0)) * (1 - wbRate);
+      const minPriceKit2 = denom2 > 0.05 ? (fixedCostsKit2 + targetProfit2) / denom2 : rawPrice2;
       const maxDiscount2Pct = rawPrice2 > 0 ? Math.max(0, ((rawPrice2 - minPriceKit2) / rawPrice2) * 100) : 0;
 
       // 3. Kit com 3 Unidades
@@ -1976,8 +2187,10 @@
         custoProduto: costUnit * 3,
         embalagem: pkg3,
         aliquotaImposto: taxPct,
+        aliquotaDifal: difalPct,
         aliquotaAds: adsPct,
         aliquotaAvarias: lossPct,
+        aliquotaGestaoWb: gestaoWbPct,
         tipoConta: accountType,
         devolucaoFacilAtiva: devFacilActive,
         itensPorPedido: 1,
@@ -1988,12 +2201,12 @@
       const feeSavings3 = (res1.valFixa * 3) - res3.valFixa;
 
       const targetProfit3 = 3 * res1.lucroLiquido;
-      const totalVarRate3 = (taxPct + adsPct + lossPct + (res3.shopeePct * 100)) / 100;
-      const fixedCostsKit3 = (costUnit * 3) + pkg3 + res3.valFixa + (devFacilActive ? 0.49 : 0);
-      const minPriceKit3 = totalVarRate3 < 1 ? (fixedCostsKit3 + targetProfit3) / (1 - totalVarRate3) : rawPrice3;
+      const denom3 = (1 - res3.shopeePct) * (1 - wbRate) - totalVarRate2;
+      const fixedCostsKit3 = (costUnit * 3) + pkg3 + (res3.valFixa + (devFacilActive ? 0.49 : 0)) * (1 - wbRate);
+      const minPriceKit3 = denom3 > 0.05 ? (fixedCostsKit3 + targetProfit3) / denom3 : rawPrice3;
       const maxDiscount3Pct = rawPrice3 > 0 ? Math.max(0, ((rawPrice3 - minPriceKit3) / rawPrice3) * 100) : 0;
 
-      const totalDeductionsPct = taxPct + adsPct + lossPct;
+      const totalDeductionsPct = taxPct + difalPct + adsPct + lossPct;
 
       const grid = document.getElementById('combo-cards-grid');
       grid.innerHTML = `
@@ -2012,10 +2225,11 @@
               <span>Repasse Líquido Shopee:</span> 
               <span class="font-bold text-slate-900">${formatBRL(res1.repasseShopee)}</span>
             </div>
-            <div class="flex justify-between text-slate-400 pl-2 text-[10px]">
-              <span>↳ Taxa Fixa: ${formatBRL(res1.valFixa)} | Comis.: ${(res1.shopeePct * 100).toFixed(0)}%</span>
-              <span>- ${formatBRL(res1.valComissao + res1.valFixa + res1.valDevFacil)}</span>
-            </div>
+            ${res1.valGestaoWb > 0 ? `
+            <div class="flex justify-between text-orange-700 font-semibold bg-orange-50/50 px-1 rounded">
+              <span>(-) Gestão WB Digital (${gestaoWbPct.toFixed(1)}%):</span>
+              <span>- ${formatBRL(res1.valGestaoWb)}</span>
+            </div>` : ''}
             <div class="flex justify-between text-slate-600">
               <span>(-) Custo Unitário (CMV):</span> 
               <span class="font-semibold text-slate-800">- ${formatBRL(costUnit)}</span>
@@ -2056,6 +2270,11 @@
               <span>Repasse Líquido Combo:</span> 
               <span class="font-bold text-slate-900">${formatBRL(res2.repasseShopee)}</span>
             </div>
+            ${res2.valGestaoWb > 0 ? `
+            <div class="flex justify-between text-orange-700 font-semibold bg-orange-100/50 px-1 rounded">
+              <span>(-) Gestão WB Digital (${gestaoWbPct.toFixed(1)}%):</span>
+              <span>- ${formatBRL(res2.valGestaoWb)}</span>
+            </div>` : ''}
             <div class="flex justify-between text-slate-600">
               <span>(-) Custo Mercadoria (2x):</span> 
               <span class="font-semibold text-slate-800">- ${formatBRL(costUnit * 2)}</span>
@@ -2102,6 +2321,11 @@
               <span>Repasse Líquido Combo:</span> 
               <span class="font-bold text-slate-900">${formatBRL(res3.repasseShopee)}</span>
             </div>
+            ${res3.valGestaoWb > 0 ? `
+            <div class="flex justify-between text-orange-700 font-semibold bg-indigo-100/50 px-1 rounded">
+              <span>(-) Gestão WB Digital (${gestaoWbPct.toFixed(1)}%):</span>
+              <span>- ${formatBRL(res3.valGestaoWb)}</span>
+            </div>` : ''}
             <div class="flex justify-between text-slate-600">
               <span>(-) Custo Mercadoria (3x):</span> 
               <span class="font-semibold text-slate-800">- ${formatBRL(costUnit * 3)}</span>
@@ -2161,17 +2385,19 @@
       const taxPct = parseFloat(document.getElementById('promo-tax').value) || 0;
       const baseDeductPct = parseFloat(document.getElementById('promo-base-deduct').value) || 0;
 
-      const accountType = document.getElementById('p-account-type')?.value || 'CNPJ_NORMAL';
+      const accountType = document.getElementById('p-account-type')?.value || 'CNPJ_SIMPLES';
+      const difalPct = parseFloat(document.getElementById('p-difal')?.value) || 0;
+      const gestaoWbPct = parseFloat(document.getElementById('p-gestao-wb')?.value) || 0;
 
       // Situação Normal Atual
-      const resNormal = evaluatePriceDetails(normalPrice, directCost, 0, taxPct, baseDeductPct, 0, accountType, true, 1);
+      const resNormal = evaluatePriceDetails(normalPrice, directCost, 0, taxPct, difalPct, baseDeductPct, 0, gestaoWbPct, accountType, true, 1);
       const normalProfitUnit = resNormal.lucroLiquido;
       const totalNormalProfitMonth = normalProfitUnit * baseVolume;
 
       // Situação Promocional (com Ads Extra e Comissão de Afiliados)
       const promoPrice = normalPrice * (1 - discPct / 100);
-      const totalVariablePct = taxPct + baseDeductPct + extraAdsPct + extraAffiliatePct;
-      const resPromo = evaluatePriceDetails(promoPrice, directCost, 0, totalVariablePct, 0, 0, accountType, true, 1);
+      const promoAdsTotal = baseDeductPct + extraAdsPct + extraAffiliatePct;
+      const resPromo = evaluatePriceDetails(promoPrice, directCost, 0, taxPct, difalPct, promoAdsTotal, 0, gestaoWbPct, accountType, true, 1);
       const promoProfitUnit = resPromo.lucroLiquido;
 
       // Elementos do DOM
