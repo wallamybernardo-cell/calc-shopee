@@ -158,10 +158,16 @@
               <h2 class="text-sm font-extrabold text-slate-900 tracking-tight">Parâmetros do Anúncio</h2>
               <p class="text-[11px] text-slate-500">Insira os custos e defina sua meta</p>
             </div>
-            <button id="btn-reset-single" onclick="resetSingleInputs()" class="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-rose-600 transition px-2 py-1 rounded-lg hover:bg-rose-50">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-              Limpar Valores
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button id="btn-example-single" onclick="loadExampleSingleInputs()" title="Preencher com dados de exemplo" class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-orange-600 transition px-2 py-1 rounded-lg hover:bg-orange-50">
+                <svg class="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Exemplo
+              </button>
+              <button id="btn-reset-single" onclick="resetSingleInputs()" title="Limpar todos os campos" class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-rose-600 transition px-2 py-1 rounded-lg hover:bg-rose-50">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Limpar Campos
+              </button>
+            </div>
           </div>
 
           <!-- Modo de Operação (Calcular Ideal vs. Simular Fixo) -->
@@ -1131,6 +1137,16 @@
 
     function getShopeeFee(price, accountType, devFacilActive, itemsPerOrder) {
       const P = Math.max(0, parseFloat(price) || 0);
+      if (P === 0) {
+        return {
+          commissionPct: 0,
+          fixedFee: 0,
+          devFacilFee: 0,
+          valComissao: 0,
+          totalFee: 0,
+          repasse: 0
+        };
+      }
       let comPct = 0.20;
       let fixedFee = 4.00;
 
@@ -1405,6 +1421,43 @@
     }
 
     function resetSingleInputs() {
+      const titleEl = document.getElementById('p-title');
+      if (titleEl) titleEl.value = "";
+      const skuEl = document.getElementById('p-sku');
+      if (skuEl) skuEl.value = "";
+      const costEl = document.getElementById('p-cost');
+      if (costEl) costEl.value = "";
+      const pkgEl = document.getElementById('p-packaging');
+      if (pkgEl) pkgEl.value = "";
+      const taxEl = document.getElementById('p-tax');
+      if (taxEl) taxEl.value = "";
+      const adsEl = document.getElementById('p-ads');
+      if (adsEl) adsEl.value = "";
+      const lossEl = document.getElementById('p-loss');
+      if (lossEl) lossEl.value = "";
+      const gestaoEl = document.getElementById('p-gestao-wb');
+      if (gestaoEl) gestaoEl.value = "";
+      const targetEl = document.getElementById('p-target-margin');
+      if (targetEl) targetEl.value = "";
+      const fixedEl = document.getElementById('p-fixed-price');
+      if (fixedEl) fixedEl.value = "";
+      const devFacilEl = document.getElementById('p-dev-facil');
+      if (devFacilEl) devFacilEl.checked = false;
+      const itemsEl = document.getElementById('p-items-per-order');
+      if (itemsEl) itemsEl.value = "1";
+      const accEl = document.getElementById('p-account-type');
+      if (accEl) accEl.value = "CNPJ_SIMPLES";
+      
+      handleSingleAccountTypeChange();
+      calculateSingle();
+      showToast("Todos os campos foram limpos!");
+    }
+
+    function loadExampleSingleInputs() {
+      const titleEl = document.getElementById('p-title');
+      if (titleEl) titleEl.value = "Camisa Algodão Premium";
+      const skuEl = document.getElementById('p-sku');
+      if (skuEl) skuEl.value = "CAM-PREM-01";
       const costEl = document.getElementById('p-cost');
       if (costEl) costEl.value = "28.50";
       const pkgEl = document.getElementById('p-packaging');
@@ -1419,10 +1472,18 @@
       if (gestaoEl) gestaoEl.value = "0.0";
       const targetEl = document.getElementById('p-target-margin');
       if (targetEl) targetEl.value = "15.0";
+      const fixedEl = document.getElementById('p-fixed-price');
+      if (fixedEl) fixedEl.value = "79.90";
+      const devFacilEl = document.getElementById('p-dev-facil');
+      if (devFacilEl) devFacilEl.checked = true;
+      const itemsEl = document.getElementById('p-items-per-order');
+      if (itemsEl) itemsEl.value = "1";
       const accEl = document.getElementById('p-account-type');
       if (accEl) accEl.value = "CNPJ_SIMPLES";
+
       handleSingleAccountTypeChange();
-      showToast("Valores redefinidos para o padrão!");
+      calculateSingle();
+      showToast("Exemplo carregado com sucesso!");
     }
 
     function applyBottleneckFix() {
@@ -1455,9 +1516,11 @@
       const devFacilPerItem = devFacilActive ? (0.49 / itemsPerOrder) : 0;
 
       let finalPrice = 0;
+      const targetVal = parseFloat(document.getElementById('p-target-margin')?.value) || 0;
 
-      if (currentCalcMode === 'IDEAL') {
-        const targetVal = parseFloat(document.getElementById('p-target-margin')?.value) || 0;
+      if (cost === 0 && packaging === 0 && currentCalcMode === 'IDEAL' && targetVal === 0) {
+        finalPrice = 0;
+      } else if (currentCalcMode === 'IDEAL') {
         finalPrice = solveIdealPrice(
           cost, packaging, taxPct, difalPct, adsPct, lossPct, targetVal, gestaoWbPct, accountType, devFacilPerItem, currentTargetType
         );
@@ -1465,7 +1528,7 @@
         finalPrice = parseFloat(document.getElementById('p-fixed-price')?.value) || 0;
       }
 
-      finalPrice = Math.max(0.01, finalPrice);
+      finalPrice = Math.max(0, finalPrice);
 
       const res = evaluatePriceDetails(
         finalPrice, cost, packaging, taxPct, difalPct, adsPct, lossPct, gestaoWbPct, accountType, devFacilActive, itemsPerOrder
@@ -1473,7 +1536,7 @@
       window.lastSingleCalc = res;
 
       // Ponto de Equilíbrio (Break-even)
-      const breakEvenPrice = solveIdealPrice(
+      const breakEvenPrice = (cost === 0 && packaging === 0) ? 0 : solveIdealPrice(
         cost, packaging, taxPct, difalPct, adsPct, lossPct, 0, gestaoWbPct, accountType, devFacilPerItem, 'CURRENCY'
       );
 
@@ -1620,6 +1683,11 @@
       const container = document.getElementById('curve-bars');
       if (!container) return;
       container.innerHTML = '';
+
+      if (cost === 0 && packaging === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400 py-3 text-center">Informe os custos do produto para gerar a curva comparativa.</div>';
+        return;
+      }
 
       const checkpoints = [75.00, 78.00, 79.90, 80.50, 83.00, 86.00, 90.00];
       checkpoints.forEach(price => {
